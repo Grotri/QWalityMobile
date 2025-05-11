@@ -1,18 +1,20 @@
+import useAuthStore from "@/src/hooks/useAuthStore";
 import React, { useState } from "react";
 import { Text, View } from "react-native";
-import { styles } from "./styles";
-import GradientPageTemplate from "../../templates/GradientPageTemplate";
-import Input from "../../atoms/Input";
-import Button from "../../atoms/Button";
-import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
 import { EErrors } from "../../../constants/errors";
 import { emailPattern } from "../../../constants/patterns";
-import { IErrors, initialErrors } from "./types";
-import { showErrorToast, showSuccessToast } from "../../../helpers/toast";
+import { showErrorToast } from "../../../helpers/toast";
+import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
+import Button from "../../atoms/Button";
+import Input from "../../atoms/Input";
 import InputPassword from "../../atoms/InputPassword";
+import GradientPageTemplate from "../../templates/GradientPageTemplate";
+import { styles } from "./styles";
+import { IErrors, initialErrors } from "./types";
 
 const ForgotPassword = () => {
   const { navigate } = useAuthNavigation();
+  const { sendResetCode, restorePassword } = useAuthStore();
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -39,8 +41,7 @@ const ForgotPassword = () => {
 
   const changePassword = () => {
     if (validate()) {
-      navigate("Login", { direction: "backward" });
-      showSuccessToast("Пароль сменен, зайдите с новыми данными");
+      restorePassword(email.trim(), code.trim(), password.trim(), navigate);
     } else {
       showErrorToast(EErrors.fields);
     }
@@ -79,7 +80,11 @@ const ForgotPassword = () => {
               customStyles={styles.confirmationInput}
               errorText={errors.code}
             />
-            <Button style={styles.codeBtn} color="blueTransparent">
+            <Button
+              style={styles.codeBtn}
+              color="blueTransparent"
+              onPress={() => sendResetCode(email.trim())}
+            >
               <Text style={styles.codeBtnText}>Отправить код</Text>
             </Button>
           </View>

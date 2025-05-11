@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Keyboard, Pressable, Text, View } from "react-native";
-import { styles } from "./styles";
-import GradientPageTemplate from "../../templates/GradientPageTemplate";
-import Input from "../../atoms/Input";
-import Button from "../../atoms/Button";
 import { CheckIcon } from "../../../../assets/icons";
-import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
-import useAuthStore from "../../../hooks/useAuthStore";
-import InputPassword from "../../atoms/InputPassword";
 import useAccountStore from "../../../hooks/useAccountStore";
+import useAuthStore from "../../../hooks/useAuthStore";
+import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
+import Button from "../../atoms/Button";
+import Input from "../../atoms/Input";
+import InputPassword from "../../atoms/InputPassword";
+import GradientPageTemplate from "../../templates/GradientPageTemplate";
+import { styles } from "./styles";
 
 const Registration = () => {
   const { navigate } = useAuthNavigation();
@@ -20,6 +20,7 @@ const Registration = () => {
     setUserField,
     clearUser,
     register,
+    sendRegisterCode,
   } = useAuthStore();
   const { addAccount } = useAccountStore();
 
@@ -78,7 +79,11 @@ const Registration = () => {
               customStyles={styles.confirmationInput}
               errorText={errors.code}
             />
-            <Button style={styles.codeBtn} color="blueTransparent">
+            <Button
+              style={styles.codeBtn}
+              color="blueTransparent"
+              onPress={() => sendRegisterCode(user.login.trim())}
+            >
               <Text style={styles.codeBtnText}>Отправить код</Text>
             </Button>
           </View>
