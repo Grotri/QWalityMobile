@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Font from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import React, { useEffect, useState } from "react";
@@ -9,9 +10,13 @@ import {
   View,
 } from "react-native";
 import { palette } from "./src/constants/palette";
+import useAuthStore from "./src/hooks/useAuthStore";
+import i18n from "./src/i18n";
+import { TLanguage } from "./src/model/user";
 import { Navigation } from "./src/navigation";
 
 const App = () => {
+  const { language, setLanguage } = useAuthStore();
   const [areFontsLoaded, setAreFontsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
@@ -59,12 +64,23 @@ const App = () => {
       };
     };
 
+    const loadLanguage = async () => {
+      const storageLang = await AsyncStorage.getItem("language");
+      setLanguage(storageLang as TLanguage);
+    };
+
     loadFont();
+    loadLanguage();
 
     if (Platform.OS === "android") {
       setupNavigationBar();
     }
   }, []);
+
+  useEffect(() => {
+    i18n.changeLanguage(language);
+    AsyncStorage.setItem("language", language);
+  }, [language]);
 
   if (!areFontsLoaded) {
     return (

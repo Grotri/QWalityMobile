@@ -14,8 +14,15 @@ import { setRefresh, setToken } from "../api/token";
 import { EErrors } from "../constants/errors";
 import { emailPattern, innPattern } from "../constants/patterns";
 import { showErrorToast, showSuccessToast } from "../helpers/toast";
+import i18n from "../i18n";
 import { IStoreStatus } from "../model/misc";
-import { IErrors, initialErrors, initialUser, IUser } from "../model/user";
+import {
+  IErrors,
+  initialErrors,
+  initialUser,
+  IUser,
+  TLanguage,
+} from "../model/user";
 
 interface IUseAuthStore extends IStoreStatus {
   user: IUser;
@@ -45,6 +52,8 @@ interface IUseAuthStore extends IStoreStatus {
     password: string,
     navigate: any
   ) => void;
+  language: TLanguage;
+  setLanguage: (lang: TLanguage) => void;
 }
 
 const useAuthStore = create<IUseAuthStore>((set, get) => ({
@@ -52,6 +61,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
   error: null,
   errors: { ...initialErrors },
   user: { ...initialUser },
+  language: "ru",
 
   clearUser: () => set({ user: { ...initialUser } }),
 
@@ -81,22 +91,22 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
     const newErrors: IErrors = {
       inn:
         !inn || !inn.trim()
-          ? EErrors.required
+          ? i18n.t(EErrors.required)
           : !innPattern.test(inn.trim())
-          ? EErrors.inn
+          ? i18n.t(EErrors.inn)
           : "",
       login: !login.trim()
-        ? EErrors.required
+        ? i18n.t(EErrors.required)
         : !emailPattern.test(login.trim())
-        ? EErrors.email
+        ? i18n.t(EErrors.email)
         : "",
-      code: !code.trim() ? EErrors.required : "",
+      code: !code.trim() ? i18n.t(EErrors.required) : "",
       password: !password.trim()
-        ? EErrors.required
+        ? i18n.t(EErrors.required)
         : password.trim().length < 8
-        ? EErrors.password
+        ? i18n.t(EErrors.password)
         : "",
-      agreement: !agreement ? EErrors.required : "",
+      agreement: !agreement ? i18n.t(EErrors.required) : "",
     };
 
     set({ errors: newErrors });
@@ -107,7 +117,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
     const { user, validate } = get();
 
     if (!validate(code, agreement)) {
-      showErrorToast(EErrors.fields);
+      showErrorToast(i18n.t(EErrors.fields));
       return;
     }
 
@@ -142,9 +152,9 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
         set({ user: newUser });
         addAccount(newUser);
 
-        showSuccessToast("Вы успешно зарегистрировались!", 2000);
+        showSuccessToast(i18n.t("registrationSuccess"), 2000);
       } else {
-        showErrorToast("Регистрация не удалась");
+        showErrorToast(i18n.t("registrationFailed"));
       }
     } catch (error) {
       console.log(error);
@@ -154,12 +164,12 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
           error.response.data &&
           error.response.data.error
         ) {
-          showErrorToast("Ошибка: " + error.response.data.error);
+          showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
         } else {
-          showErrorToast("Произошла ошибка при регистрации");
+          showErrorToast(i18n.t("registrationError"));
         }
       } else {
-        showErrorToast("Неизвестная ошибка");
+        showErrorToast(i18n.t("unknownError"));
       }
       set({ error });
     } finally {
@@ -191,7 +201,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       await AsyncStorage.setItem("user", JSON.stringify(newUser));
       set({ user: newUser });
       addAccount(newUser);
-      showSuccessToast("Вы успешно вошли в аккаунт!", 2000);
+      showSuccessToast(i18n.t("loginSuccess"), 2000);
     } catch (error) {
       console.log(error);
       if (error instanceof AxiosError) {
@@ -200,12 +210,12 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
           error.response.data &&
           error.response.data.error
         ) {
-          showErrorToast("Ошибка: " + error.response.data.error);
+          showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
         } else {
-          showErrorToast("Произошла ошибка при входе в аккаунт");
+          showErrorToast(i18n.t("loginError"));
         }
       } else {
-        showErrorToast("Неизвестная ошибка");
+        showErrorToast(i18n.t("unknownError"));
       }
       set({ error });
     } finally {
@@ -218,7 +228,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       try {
         set({ loading: true, error: null });
         await sendCode({ email });
-        showSuccessToast("Код выслан на почту");
+        showSuccessToast(i18n.t("codeSentToEmail"));
       } catch (error) {
         console.log(error);
         if (error instanceof AxiosError) {
@@ -227,19 +237,19 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
             error.response.data &&
             error.response.data.error
           ) {
-            showErrorToast("Ошибка: " + error.response.data.error);
+            showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
           } else {
-            showErrorToast("Произошла ошибка при отправке кода");
+            showErrorToast(i18n.t("codeSendError"));
           }
         } else {
-          showErrorToast("Неизвестная ошибка");
+          showErrorToast(i18n.t("unknownError"));
         }
         set({ error });
       } finally {
         set({ loading: false });
       }
     } else {
-      showErrorToast("Сначала введите почту");
+      showErrorToast(i18n.t("enterEmailFirst"));
     }
   },
 
@@ -248,7 +258,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       try {
         set({ loading: true, error: null });
         await resetPassword({ email });
-        showSuccessToast("Код выслан на почту");
+        showSuccessToast(i18n.t("codeSentToEmail"));
       } catch (error) {
         console.log(error);
         if (error instanceof AxiosError) {
@@ -257,19 +267,19 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
             error.response.data &&
             error.response.data.error
           ) {
-            showErrorToast("Ошибка: " + error.response.data.error);
+            showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
           } else {
-            showErrorToast("Произошла ошибка при отправке кода");
+            showErrorToast(i18n.t("codeSendError"));
           }
         } else {
-          showErrorToast("Неизвестная ошибка");
+          showErrorToast(i18n.t("unknownError"));
         }
         set({ error });
       } finally {
         set({ loading: false });
       }
     } else {
-      showErrorToast("Сначала введите почту");
+      showErrorToast(i18n.t("enterEmailFirst"));
     }
   },
 
@@ -278,7 +288,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       set({ loading: true, error: null });
       await confirmResetPassword({ email, code, new_password: password });
       navigate("Login", { direction: "backward" });
-      showSuccessToast("Пароль сменен, зайдите с новыми данными", 5000);
+      showSuccessToast(i18n.t("passwordChanged"), 5000);
     } catch (error) {
       console.log(error);
       if (error instanceof AxiosError) {
@@ -287,17 +297,23 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
           error.response.data &&
           error.response.data.error
         ) {
-          showErrorToast("Ошибка: " + error.response.data.error);
+          showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
         } else {
-          showErrorToast("Произошла ошибка при восстановлении пароля");
+          showErrorToast(i18n.t("passwordRecoveryError"));
         }
       } else {
-        showErrorToast("Неизвестная ошибка");
+        showErrorToast(i18n.t("unknownError"));
       }
       set({ error });
     } finally {
       set({ loading: false });
     }
+  },
+
+  setLanguage: (lang) => {
+    i18n.changeLanguage(lang);
+    AsyncStorage.setItem("language", lang);
+    set({ language: lang });
   },
 }));
 
