@@ -12,17 +12,17 @@ export interface IMenuItem {
 export const menuItems: IMenuItem[] = [
   {
     icon: TrashBinIcon,
-    title: "Корзина",
+    title: "trash",
     path: "TrashBin",
   },
   {
     icon: SettingsIcon,
-    title: "Настройки",
+    title: "settingsLabel",
     path: "Settings",
   },
   {
     icon: HelpIcon,
-    title: "Помощь",
+    title: "help",
     path: "FAQ",
   },
 ];

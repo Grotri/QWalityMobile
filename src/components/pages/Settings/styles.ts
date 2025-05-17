@@ -65,6 +65,7 @@ export const getStyles = () => {
       fontSize: getFontSize(16),
       lineHeight: getLineHeight(21),
       fontFamily: fonts.bold,
+      textAlign: "center",
     },
     modalBtns: {
       flexDirection: "row",

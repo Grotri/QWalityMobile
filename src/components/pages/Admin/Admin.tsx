@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import uuid from "react-native-uuid";
 import { ArrowBottomIcon } from "../../../../assets/icons";
@@ -24,6 +25,7 @@ import { IErrors, initialErrors } from "./types";
 
 const Admin = () => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const styles = getStyles();
   const palette = usePalette();
   const { accounts, registerAccount } = useAccountStore();
@@ -44,11 +46,11 @@ const Admin = () => {
 
   const validate = (): boolean => {
     const newErrors: IErrors = {
-      login: !login.trim() ? EErrors.required : "",
+      login: !login.trim() ? t(EErrors.required) : "",
       password: !password.trim()
-        ? EErrors.required
+        ? t(EErrors.required)
         : password.trim().length < 8
-        ? EErrors.password
+        ? t(EErrors.password)
         : "",
     };
     setErrors(newErrors);
@@ -70,10 +72,10 @@ const Admin = () => {
         setLogin("");
         setPassword("");
       } else {
-        showErrorToast(EErrors.fields);
+        showErrorToast(t(EErrors.fields));
       }
     } else {
-      showErrorToast("Достигнут лимит аккаунтов");
+      showErrorToast(t("accountsLimitReached"));
     }
   };
 
@@ -81,18 +83,18 @@ const Admin = () => {
     <PageTemplate
       mustScroll={screenHeight < 740}
       onTouchablePress={closeDropdowns}
-      headerText="Админ панель"
+      headerText={t("adminPanel")}
       underlined
       onHeaderClick={() => navigate("Profile", { direction: "backward" })}
       isWholeBlurOn={isMainModalOpened}
     >
       <View>
         <View style={styles.adminWrapper}>
-          <Text style={styles.subTitle}>Уверенность нейросети</Text>
+          <Text style={styles.subTitle}>{t("networkConfidence")}</Text>
           <Slider />
-          <Text style={styles.subTitle}>Регистрация суб-аккаунта</Text>
+          <Text style={styles.subTitle}>{t("subAccountRegistration")}</Text>
           <Input
-            label="Логин"
+            label={t("login")}
             value={login}
             onChangeText={(login) => {
               setLogin(login);
@@ -107,7 +109,7 @@ const Admin = () => {
             customLabelStyles={styles.confirmationInputLabel}
           />
           <InputPassword
-            label="Пароль"
+            label={t("password")}
             value={password}
             onChangeText={(password) => {
               setPassword(password);
@@ -123,11 +125,11 @@ const Admin = () => {
           <Dropdown
             data={availableRoles.map((key) => ({
               value: key,
-              label: ERoles[key as keyof typeof ERoles],
+              label: t(ERoles[key as keyof typeof ERoles]),
             }))}
             value={role}
             setValue={setRole}
-            label="Роль"
+            label={t("role")}
             wrapperStyle={styles.dropdownWrapper}
             labelStyle={styles.dropdownLabelStyle}
             dropdownStyle={styles.dropdownMainStyle}
@@ -137,24 +139,24 @@ const Admin = () => {
             arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
           />
           <Button color="blue" style={styles.btn} onPress={createSubAccount}>
-            <Text style={styles.btnText}>Создать суб-аккаунт</Text>
+            <Text style={styles.btnText}>{t("createAccount")}</Text>
           </Button>
           <Button
             color="blue"
             style={styles.btn}
             onPress={() => setIsMainModalOpened(true)}
           >
-            <Text style={styles.btnText}>Получить отчет</Text>
+            <Text style={styles.btnText}>{t("getReport")}</Text>
           </Button>
           <Button
             color="blue"
             style={styles.btn}
             onPress={() => navigate("AccountManagement")}
           >
-            <Text style={styles.btnText}>Управлять аккаунтами</Text>
+            <Text style={styles.btnText}>{t("manageAccounts")}</Text>
           </Button>
           <Text style={styles.statistics}>
-            {accounts.length}/{accountLimits} аккаунтов
+            {accounts.length}/{accountLimits} {t("accountsCount")}
           </Text>
         </View>
         <GetReportModal

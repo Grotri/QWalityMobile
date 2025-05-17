@@ -1,5 +1,6 @@
 import { useRoute } from "@react-navigation/native";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { showSuccessToast } from "../../../helpers/toast";
 import { useCost } from "../../../helpers/useCost";
@@ -11,6 +12,7 @@ import { getStyles } from "./styles";
 
 const PaymentChange = () => {
   const route = useRoute();
+  const { t } = useTranslation();
   const { setUserField } = useAuthStore();
   const styles = getStyles();
   const { navigate } = useMainNavigation();
@@ -19,7 +21,7 @@ const PaymentChange = () => {
 
   return (
     <PageTemplate
-      headerText="Оплата подписки"
+      headerText={t("subscriptionPayment")}
       onHeaderClick={() =>
         navigate("SubscriptionChange", { direction: "backward" })
       }
@@ -27,22 +29,22 @@ const PaymentChange = () => {
     >
       <View style={styles.wrapper}>
         <Text style={styles.title}>
-          Вы собираетесь оплатить подписку за {subscriptionCost} рублей
+          {t("subscriptionPaymentIntro")} {subscriptionCost} {t("rubles")}
         </Text>
         {sliderId && (
           <Button
             onPress={() => {
               setUserField("subscription", sliderId);
               navigate("Profile", { direction: "backward" });
-              showSuccessToast("Подписка успешно оплачена");
+              showSuccessToast(t("subscriptionPaid"));
               setTimeout(() => {
-                showSuccessToast("Вы успешно поменяли уровень подписки");
+                showSuccessToast(t("subscriptionLevelChanged"));
               }, 2000);
             }}
             style={styles.btn}
             color="blue"
           >
-            <Text style={styles.btnText}>Оплатить</Text>
+            <Text style={styles.btnText}>{t("pay")}</Text>
           </Button>
         )}
       </View>

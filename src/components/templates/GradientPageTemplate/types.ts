@@ -3,4 +3,5 @@ export interface IGradientPageTemplate {
   headerText?: string;
   onHeaderClick?: () => void;
   underlined?: boolean;
+  toggleLanguage?: boolean;
 }

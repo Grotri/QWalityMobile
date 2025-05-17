@@ -1,7 +1,9 @@
 import { fontSizes } from "@/src/constants/fontSizes";
 import { languages } from "@/src/constants/languages";
 import { themes } from "@/src/constants/themes";
+import { TFontSize, TLanguage, TTheme } from "@/src/model/user";
 import React, { Fragment, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Keyboard, Text, View } from "react-native";
 import { ArrowBottomIcon } from "../../../../assets/icons";
 import { EErrors } from "../../../constants/errors";
@@ -19,7 +21,8 @@ import { getStyles } from "./styles";
 
 const Settings = () => {
   const { navigate } = useMainNavigation();
-  const { user, setUserField, logout } = useAuthStore();
+  const { t } = useTranslation();
+  const { user, setUserField, logout, language, setLanguage } = useAuthStore();
   const { clearAccounts } = useAccountStore();
   const styles = getStyles();
 
@@ -34,11 +37,15 @@ const Settings = () => {
   >(null);
 
   const toggleTheme = (value: string) => {
-    setUserField("theme", value);
+    setUserField("theme", value as TTheme);
   };
 
   const toggleFontSize = (value: string) => {
-    setUserField("fontSize", value);
+    setUserField("fontSize", value as TFontSize);
+  };
+
+  const toggleLanguage = (value: string) => {
+    setLanguage(value as TLanguage);
   };
 
   const closeDD = () => {
@@ -47,8 +54,8 @@ const Settings = () => {
 
   const deleteAccount = () => {
     if (!code.trim()) {
-      setError(EErrors.required);
-      showErrorToast("Сначала введите код");
+      setError(t(EErrors.required));
+      showErrorToast(t("enterCodeFirst"));
     } else {
       logout(clearAccounts);
     }
@@ -63,7 +70,7 @@ const Settings = () => {
 
   return (
     <PageTemplate
-      headerText="Настройки"
+      headerText={t("settingsLabel")}
       underlined
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
       mustScroll={false}
@@ -74,9 +81,12 @@ const Settings = () => {
         {user.role !== "user" && (
           <Fragment>
             <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>Авто-удаление дефектов</Text>
+              <Text style={styles.dropdownText}>{t("autoDeleteDefects")}</Text>
               <Dropdown
-                data={settingsItems}
+                data={settingsItems.map((item) => ({
+                  value: item.value,
+                  label: t(item.label),
+                }))}
                 setValue={setIsAutoDelete}
                 value={isAutoDelete}
                 isOpen={openDropdown === "first"}
@@ -87,9 +97,12 @@ const Settings = () => {
               />
             </View>
             <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>Авто-чистка корзины</Text>
+              <Text style={styles.dropdownText}>{t("autoCleanTrash")}</Text>
               <Dropdown
-                data={settingsItems}
+                data={settingsItems.map((item) => ({
+                  value: item.value,
+                  label: t(item.label),
+                }))}
                 setValue={setIsAutoClear}
                 value={isAutoClear}
                 isOpen={openDropdown === "second"}
@@ -100,9 +113,12 @@ const Settings = () => {
               />
             </View>
             <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>Тема</Text>
+              <Text style={styles.dropdownText}>{t("theme")}</Text>
               <Dropdown
-                data={themes}
+                data={themes.map((item) => ({
+                  value: item.value,
+                  label: t(item.label),
+                }))}
                 setValue={toggleTheme}
                 value={user.theme}
                 isOpen={openDropdown === "theme"}
@@ -113,9 +129,12 @@ const Settings = () => {
               />
             </View>
             <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>Размер шрифта</Text>
+              <Text style={styles.dropdownText}>{t("fontSize")}</Text>
               <Dropdown
-                data={fontSizes}
+                data={fontSizes.map((item) => ({
+                  value: item.value,
+                  label: t(item.label),
+                }))}
                 setValue={toggleFontSize}
                 value={user.fontSize}
                 isOpen={openDropdown === "fonts"}
@@ -126,11 +145,14 @@ const Settings = () => {
               />
             </View>
             <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>Язык</Text>
+              <Text style={styles.dropdownText}>{t("language")}</Text>
               <Dropdown
-                data={languages}
-                setValue={() => {}}
-                value={"ru"}
+                data={languages.map((item) => ({
+                  value: item.value,
+                  label: t(item.label),
+                }))}
+                setValue={toggleLanguage}
+                value={language}
                 isOpen={openDropdown === "lang"}
                 setIsOpen={(val) => setOpenDropdown(val ? "lang" : null)}
                 wrapperStyle={styles.wrapperStyle}
@@ -145,7 +167,7 @@ const Settings = () => {
           color="blue"
           onPress={() => setIsExitModalOpen(true)}
         >
-          <Text style={styles.btnText}>Выйти из аккаунта</Text>
+          <Text style={styles.btnText}>{t("logout")}</Text>
         </Button>
         {user.role === "owner" && (
           <Button
@@ -153,28 +175,28 @@ const Settings = () => {
             color="red"
             onPress={() => setIsDeleteModalOpen(true)}
           >
-            <Text style={styles.btnText}>Удалить аккаунт</Text>
+            <Text style={styles.btnText}>{t("deleteAccount")}</Text>
           </Button>
         )}
         <Text style={styles.version}>QWality Release v1.0.0</Text>
       </View>
       <Modal isVisible={isExitModalOpen} setIsVisible={setIsExitModalOpen}>
         <View style={styles.modal}>
-          <Text style={styles.modalText}>Вы точно хотите выйти?</Text>
+          <Text style={styles.modalText}>{t("logoutConfirmation")}</Text>
           <View style={styles.modalBtns}>
             <Button
               style={styles.modalBtn}
               color="blue"
               onPress={() => logout(clearAccounts)}
             >
-              <Text style={styles.modalBtnText}>Да</Text>
+              <Text style={styles.modalBtnText}>{t("yes")}</Text>
             </Button>
             <Button
               style={styles.modalBtn}
               color="blue"
               onPress={() => setIsExitModalOpen(false)}
             >
-              <Text style={styles.modalBtnText}>Нет</Text>
+              <Text style={styles.modalBtnText}>{t("no")}</Text>
             </Button>
           </View>
         </View>
@@ -185,12 +207,12 @@ const Settings = () => {
         onPress={() => Keyboard.dismiss()}
       >
         <View style={styles.modal}>
-          <Text style={styles.modalText}>Удалить аккаунт?</Text>
+          <Text style={styles.modalText}>{t("confirmDeleteAccount")}</Text>
           <View style={styles.confirmationWrapper}>
             <Input
               keyboardType="numeric"
               inputMode="numeric"
-              label="Код подтверждения"
+              label={t("confirmationCode")}
               value={code}
               onChangeText={(code) => {
                 setCode(code);
@@ -203,19 +225,19 @@ const Settings = () => {
               maxLength={6}
             />
             <Button style={styles.codeBtn} color="blue">
-              <Text style={styles.modalBtnCodeText}>Отправить код</Text>
+              <Text style={styles.modalBtnCodeText}>{t("sendCode")}</Text>
             </Button>
           </View>
           <View style={styles.modalBtns}>
             <Button style={styles.modalBtn} color="red" onPress={deleteAccount}>
-              <Text style={styles.modalBtnText}>Удалить</Text>
+              <Text style={styles.modalBtnText}>{t("delete")}</Text>
             </Button>
             <Button
               style={styles.modalBtn}
               color="blue"
               onPress={() => setIsDeleteModalOpen(false)}
             >
-              <Text style={styles.modalBtnText}>Отменить</Text>
+              <Text style={styles.modalBtnText}>{t("cancelAction")}</Text>
             </Button>
           </View>
         </View>

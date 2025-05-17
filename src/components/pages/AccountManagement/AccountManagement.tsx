@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, Text, TouchableWithoutFeedback, View } from "react-native";
 import Accordion from "react-native-collapsible/Accordion";
 import {
@@ -23,6 +24,7 @@ import { getStyles } from "./styles";
 
 const AccountManagement = () => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
@@ -100,7 +102,7 @@ const AccountManagement = () => {
     return (
       <View style={styles.content}>
         <Input
-          label="Логин"
+          label={t("login")}
           value={section.login}
           onChangeText={(login) => {
             changeAccountField(section.id, "login", login);
@@ -114,7 +116,7 @@ const AccountManagement = () => {
           errorText={error.login}
         />
         <InputPassword
-          label="Пароль"
+          label={t("password")}
           value={section.password}
           onChangeText={(password) => {
             changeAccountField(section.id, "password", password);
@@ -132,13 +134,13 @@ const AccountManagement = () => {
         <Dropdown
           data={availableRoles.map((key) => ({
             value: key,
-            label: ERoles[key as keyof typeof ERoles],
+            label: t(ERoles[key as keyof typeof ERoles]),
           }))}
           value={section.role}
           setValue={(role) => changeAccountField(section.id, "role", role)}
           isOpen={isDdOpen}
           setIsOpen={setIsDdOpen}
-          label="Роль"
+          label={t("role")}
           wrapperStyle={[
             styles.dropdownWrapper,
             { marginBottom: isDdOpen ? 46 * availableRoles.length : 36 },
@@ -162,7 +164,7 @@ const AccountManagement = () => {
               })
             }
           >
-            <Text style={styles.btnText}>Изменить</Text>
+            <Text style={styles.btnText}>{t("edit")}</Text>
           </Button>
           <Button
             color="red"
@@ -172,7 +174,7 @@ const AccountManagement = () => {
               setActiveSections([]);
             }}
           >
-            <Text style={styles.btnText}>Удалить</Text>
+            <Text style={styles.btnText}>{t("delete")}</Text>
           </Button>
         </View>
       </View>
@@ -181,7 +183,7 @@ const AccountManagement = () => {
 
   return (
     <PageTemplate
-      headerText="Управление аккаунтами"
+      headerText={t("accountManagement")}
       onHeaderClick={() => navigate("Admin", { direction: "backward" })}
     >
       <TouchableWithoutFeedback onPress={closeDd}>
@@ -197,9 +199,7 @@ const AccountManagement = () => {
               touchableComponent={Pressable}
             />
           ) : (
-            <Text style={styles.noAccounts}>
-              У вас нет управляемых аккаунтов
-            </Text>
+            <Text style={styles.noAccounts}>{t("noManagedAccounts")}</Text>
           )}
         </View>
       </TouchableWithoutFeedback>

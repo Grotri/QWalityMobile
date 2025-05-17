@@ -24,9 +24,6 @@ export const getStyles = () => {
       left: "50%",
       transform: [{ translateX: "-50%" }],
     },
-    shortHeaderTextWrapper: {
-      width: "83%",
-    },
     headerText: {
       color: palette.mainText,
       fontFamily: fonts.bold,
@@ -39,6 +36,21 @@ export const getStyles = () => {
       height: 3,
       width: "52%",
       opacity: 0.75,
+    },
+    language: {
+      position: "absolute",
+      right: 0,
+      top: "50%",
+      transform: [{ translateY: "-50%" }],
+      padding: 6,
+      borderRadius: 4,
+      minWidth: 28,
+    },
+    languageText: {
+      color: palette.mainText,
+      fontFamily: fonts.semibold,
+      fontSize: getFontSize(14),
+      lineHeight: getLineHeight(16),
     },
   });
 };

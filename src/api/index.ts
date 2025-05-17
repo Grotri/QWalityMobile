@@ -1,5 +1,6 @@
 import axios from "axios";
 import { showErrorToast } from "../helpers/toast";
+import i18n from "../i18n";
 import { forceLogout } from "./forceLogout";
 import { getRefresh, getToken, setToken } from "./token";
 
@@ -45,7 +46,7 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        showErrorToast("Сессия истекла. Пожалуйста, войдите заново.");
+        showErrorToast(i18n.t("sessionExpired"));
         forceLogout();
         return Promise.reject(refreshError);
       }

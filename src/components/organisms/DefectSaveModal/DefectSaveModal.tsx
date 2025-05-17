@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { convertISODate } from "../../../helpers/formatDate";
 import { showSuccessToast } from "../../../helpers/toast";
@@ -11,6 +12,7 @@ import { IDefectSaveModal } from "./types";
 
 const DefectSaveModal: FC<IDefectSaveModal> = ({ onClose, defect }) => {
   const styles = getStyles();
+  const { t } = useTranslation();
   const [defectInfo, setDefectInfo] = useState<IDefect>({ ...initialDefect });
   const { name, date } = defectInfo;
 
@@ -24,9 +26,9 @@ const DefectSaveModal: FC<IDefectSaveModal> = ({ onClose, defect }) => {
     <Modal isVisible={!!defect} onBackdropPress={onClose}>
       <View style={styles.modal}>
         <View style={styles.mainInfo}>
-          <Text style={styles.title}>Хотите скачать изображение?</Text>
+          <Text style={styles.title}>{t("wantDownloadImage")}</Text>
           <Text style={styles.name}>
-            Дефект ({name}) {convertISODate(date)}
+            {t("defect")} ({t(name)}) {convertISODate(date)}
           </Text>
         </View>
         <View style={styles.btns}>
@@ -35,13 +37,13 @@ const DefectSaveModal: FC<IDefectSaveModal> = ({ onClose, defect }) => {
             style={styles.btn}
             onPress={() => {
               onClose();
-              showSuccessToast("Изображение скачано");
+              showSuccessToast(t("imageDownloaded"));
             }}
           >
-            <Text style={styles.btnText}>Да</Text>
+            <Text style={styles.btnText}>{t("yes")}</Text>
           </Button>
           <Button color="modal" style={styles.btn} onPress={onClose}>
-            <Text style={styles.btnText}>Нет</Text>
+            <Text style={styles.btnText}>{t("no")}</Text>
           </Button>
         </View>
       </View>

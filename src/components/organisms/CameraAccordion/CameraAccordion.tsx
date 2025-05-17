@@ -1,4 +1,5 @@
 import React, { FC, Fragment, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import Accordion from "react-native-collapsible/Accordion";
 import {
@@ -40,6 +41,7 @@ const CameraAccordion: FC<ICameraAccordion> = ({
   setSelectedDefect,
 }) => {
   const DEFAULT_PAGE_CAPACITY = 5;
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
@@ -124,7 +126,9 @@ const CameraAccordion: FC<ICameraAccordion> = ({
               <CameraIcon />
               <Text style={styles.cameraTitle}>{camera.title}</Text>
             </View>
-            <Text style={styles.defectText}>{defects.length}/100 дефектов</Text>
+            <Text style={styles.defectText}>
+              {defects.length}/100 {t("defects")}
+            </Text>
             <Text style={styles.defectText}>{defects.length}%</Text>
           </View>
           <View style={styles.line} />
@@ -141,10 +145,12 @@ const CameraAccordion: FC<ICameraAccordion> = ({
                 ]}
               />
               <Text style={styles.stateName}>
-                {camera.online ? "Online" : "Offline"}
+                {camera.online ? t("online") : t("offline")}
               </Text>
             </View>
-            <Text style={styles.uptime}>Аптайм {camera.uptime}</Text>
+            <Text style={styles.uptime}>
+              {t("uptime")} {camera.uptime}
+            </Text>
           </View>
         </View>
         <IconRotated
@@ -182,7 +188,7 @@ const CameraAccordion: FC<ICameraAccordion> = ({
                     }}
                   >
                     <SettingsIcon width={19} height={19} stroke={2} />
-                    <Text style={styles.iconTitle}>Настроить</Text>
+                    <Text style={styles.iconTitle}>{t("settings")}</Text>
                   </Button>
                 )}
                 {defects.length > 0 && (
@@ -203,7 +209,7 @@ const CameraAccordion: FC<ICameraAccordion> = ({
                           sortOption && styles.activeOption,
                         ]}
                       >
-                        Сортировать
+                        {t("sort")}
                       </Text>
                     </Button>
                     <Button
@@ -224,7 +230,7 @@ const CameraAccordion: FC<ICameraAccordion> = ({
                           filterOption && styles.activeOption,
                         ]}
                       >
-                        Фильтровать
+                        {t("filter")}
                       </Text>
                     </Button>
                   </>
@@ -246,14 +252,14 @@ const CameraAccordion: FC<ICameraAccordion> = ({
                 <Defect
                   key={defect.id}
                   defect={defect}
-                  textBtn={user.role !== "user" ? "Скрыть" : undefined}
+                  textBtn={user.role !== "user" ? t("hide") : undefined}
                   setSelectedDefect={setSelectedDefect}
                   onPress={() => deleteDefect(camera.id, defect.id)}
                   pressableIcon
                 />
               ))
             ) : (
-              <Text style={styles.noDefects}>Дефектов не обнаружено</Text>
+              <Text style={styles.noDefects}>{t("noDefectsFound")}</Text>
             )}
           </View>
           <CameraPagination

@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlatList, Text, View } from "react-native";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../../../assets/icons";
 import { screenWidth } from "../../../constants/screenSize";
@@ -20,6 +21,7 @@ import { getStyles } from "./styles";
 
 const SubscriptionChange = () => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const { user, setUserField, logout } = useAuthStore();
   const styles = getStyles();
   const { cameras } = useCamerasStore();
@@ -49,26 +51,24 @@ const SubscriptionChange = () => {
     );
 
     if (hasTooManyAccounts) {
-      showErrorToast(
-        "Вы не можете перейти на этот тариф, так как у вас больше суб-аккаунтов, чем в лимите"
-      );
+      showErrorToast(t("cannotSwitchPlanDueToSubAccounts"));
     } else if (hasTooManyCameras) {
-      showErrorToast(
-        "Вы не можете перейти на этот тариф, так как у вас больше камер, чем в лимите"
-      );
+      showErrorToast(t("cannotSwitchPlanDueToCameras"));
     } else if (invalidAccounts.length > 0) {
       const rolesList = [...new Set(invalidAccounts.map((a) => a.role))].join(
         ", "
       );
       showErrorToast(
-        `Нельзя перейти на этот тариф, так как у вас есть аккаунты с ролями: ${rolesList}, которые не входят в разрешённые роли этого тарифа`,
+        `${t("cannotSwitchPlanDueToRoles")}: ${rolesList}, ${t(
+          "rolesNotAllowedInPlan"
+        )}`,
         3000
       );
     } else {
       if (sliderId === "0") {
         setUserField("subscription", sliderId);
         navigate("Profile", { direction: "backward" });
-        showSuccessToast("Вы успешно поменяли уровень подписки");
+        showSuccessToast(t("subscriptionLevelChanged"));
       } else {
         navigate("PaymentChange", { sliderId });
       }
@@ -77,7 +77,7 @@ const SubscriptionChange = () => {
 
   return (
     <GradientPageTemplate
-      headerText="Выберите уровень подписки"
+      headerText={t("selectSubscriptionLevel")}
       onHeaderClick={() => navigate("Profile", { direction: "backward" })}
       mustScroll={false}
     >
@@ -135,7 +135,7 @@ const SubscriptionChange = () => {
           style={styles.cancelBtn}
           onPress={() => logout(clearAccounts)}
         >
-          <Text style={styles.cancelBtnText}>Отменить подписку</Text>
+          <Text style={styles.cancelBtnText}>{t("cancelSubscription")}</Text>
         </Button>
       </View>
     </GradientPageTemplate>

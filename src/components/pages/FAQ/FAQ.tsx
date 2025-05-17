@@ -1,5 +1,6 @@
 import { supportLink } from "@/src/constants/support";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Linking, Pressable, Text, View } from "react-native";
 import Accordion from "react-native-collapsible/Accordion";
 import { ArrowAccordionIcon, MessageIcon } from "../../../../assets/icons";
@@ -13,6 +14,7 @@ import { IQuestionSection } from "./types";
 
 const FAQ = () => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const styles = getStyles();
   const [activeSections, setActiveSections] = useState<number[]>([]);
 
@@ -40,12 +42,12 @@ const FAQ = () => {
 
   return (
     <PageTemplate
-      headerText="Помощь"
+      headerText={t("help")}
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
       bottomIcon={
         <BottomFixIcon
           icon={<MessageIcon />}
-          text="Обратиться в поддержку"
+          text={t("contactSupport")}
           onPress={() => Linking.openURL(supportLink)}
           marginRight={12}
           marginBottom={28}
@@ -64,7 +66,7 @@ const FAQ = () => {
             touchableComponent={Pressable}
           />
         ) : (
-          <Text style={styles.noQuestions}>Здесь пусто</Text>
+          <Text style={styles.noQuestions}>{t("emptyHere")}</Text>
         )}
       </View>
     </PageTemplate>

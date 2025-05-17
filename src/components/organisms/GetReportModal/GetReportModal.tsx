@@ -1,5 +1,6 @@
 import { EErrors } from "@/src/constants/errors";
 import React, { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { ArrowBottomIcon, CrossIcon } from "../../../../assets/icons";
 import { formats } from "../../../constants/formats";
@@ -16,6 +17,7 @@ import { IGetReportModal } from "./types";
 const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
   const styles = getStyles();
   const palette = usePalette();
+  const { t } = useTranslation();
   const [isSubModalOpened, setIsSubModalOpened] = useState<boolean>(false);
   const [isFormatDdOpen, setIsFormatDdOpen] = useState<boolean>(false);
   const [type, setType] = useState<"report" | "log">("report");
@@ -25,17 +27,17 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
 
   const validateDates = (): boolean => {
     if (!startDate || !endDate) {
-      showErrorToast(EErrors.chooseDates);
+      showErrorToast(t(EErrors.chooseDates));
       return false;
     }
 
     if (endDate > new Date()) {
-      showErrorToast(EErrors.futureDate);
+      showErrorToast(t(EErrors.futureDate));
       return false;
     }
 
     if (startDate > endDate) {
-      showErrorToast(EErrors.timeDates);
+      showErrorToast(t(EErrors.timeDates));
       return false;
     }
 
@@ -45,14 +47,16 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
   const handleSave = () => {
     if (!validateDates()) return;
 
-    showSuccessToast(type === "log" ? "Лог скачан" : "Отчет скачан");
+    showSuccessToast(
+      type === "log" ? t("logDownloaded") : t("reportDownloaded")
+    );
     closeModals();
   };
 
   const handleDelete = () => {
     if (!validateDates()) return;
 
-    showSuccessToast(type === "log" ? "Лог удален" : "Отчет удален");
+    showSuccessToast(type === "log" ? t("logDeleted") : t("reportDeleted"));
     closeModals();
   };
 
@@ -91,12 +95,12 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
           <View style={styles.modal}>
             <View style={styles.crossIconWrapper}>
               <CrossIcon style={styles.crossIcon} onClick={closeModals} />
-              <Text style={styles.modalTitle}>Получить отчет</Text>
+              <Text style={styles.modalTitle}>{t("getReport")}</Text>
             </View>
             <View style={styles.modalContent}>
               <View style={styles.row}>
                 <Radio
-                  label="Отчет"
+                  label={t("report")}
                   isChecked={type === "report"}
                   setIsChecked={() => {
                     setType("report");
@@ -104,7 +108,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                 />
                 <View style={styles.empty} />
                 <Radio
-                  label="Лог"
+                  label={t("log")}
                   isChecked={type === "log"}
                   setIsChecked={() => {
                     setType("log");
@@ -147,7 +151,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                   style={styles.btnModal}
                   onPress={() => setIsSubModalOpened(true)}
                 >
-                  <Text style={styles.btnModalText}>Удалить лог</Text>
+                  <Text style={styles.btnModalText}>{t("deleteLog")}</Text>
                 </Button>
                 <View style={styles.empty} />
                 <Button
@@ -155,16 +159,14 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                   style={styles.btnModal}
                   onPress={handleSave}
                 >
-                  <Text style={styles.btnModalText}>Скачать</Text>
+                  <Text style={styles.btnModalText}>{t("download")}</Text>
                 </Button>
               </View>
             </View>
           </View>
           {isSubModalOpened && (
             <View style={styles.modal}>
-              <Text style={styles.subModalTitle}>
-                Вы точно хотите удалить лог?
-              </Text>
+              <Text style={styles.subModalTitle}>{t("confirmDeleteLog")}</Text>
               <View style={styles.modalContent}>
                 <View style={styles.row}>
                   <Button
@@ -172,7 +174,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                     style={styles.btnModal}
                     onPress={handleDelete}
                   >
-                    <Text style={styles.btnModalTextBold}>Да</Text>
+                    <Text style={styles.btnModalTextBold}>{t("yes")}</Text>
                   </Button>
                   <View style={styles.empty} />
                   <Button
@@ -182,7 +184,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                       setIsSubModalOpened(false);
                     }}
                   >
-                    <Text style={styles.btnModalTextBold}>Нет</Text>
+                    <Text style={styles.btnModalTextBold}>{t("no")}</Text>
                   </Button>
                 </View>
               </View>

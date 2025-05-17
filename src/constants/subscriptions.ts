@@ -33,46 +33,30 @@ export type ISubscription = ISliderCard;
 export const subscriptions: ISubscription[] = [
   {
     id: 0,
-    title: "Демо",
-    description: "Базовый функционал",
-    radioLabels: [
-      `${rolesLimits["0"]} роль`,
-      `${accountLimits["0"]} аккаунт`,
-      `${cameraLimits["0"]} камера`,
-    ],
+    title: "demo",
+    description: "basicFunctionality",
+    radioLabels: ["1role", "1account", "1camera"],
     price: cost["0"],
   },
   {
     id: 1,
-    title: "Стандарт",
-    description: "Расширенный функционал",
-    radioLabels: [
-      `${rolesLimits["1"]} роли`,
-      `${accountLimits["1"]} аккаунта`,
-      `${cameraLimits["1"]} камеры`,
-    ],
+    title: "standard",
+    description: "extendedFunctionality",
+    radioLabels: ["2role", "4account", "3camera"],
     price: cost["1"],
   },
   {
     id: 2,
-    title: "Про",
-    description: "Полноценный функционал",
-    radioLabels: [
-      `${rolesLimits["2"]} роли`,
-      `${accountLimits["2"]} аккаунтов`,
-      `${cameraLimits["2"]} камер`,
-    ],
+    title: "pro",
+    description: "fullFunctionality",
+    radioLabels: ["4role", "8account", "8camera"],
     price: cost["2"],
   },
   {
     id: 3,
-    title: "Ультима",
-    description: "Полноценный функционал",
-    radioLabels: [
-      `${rolesLimits["3"]} роли`,
-      `${accountLimits["3"]} аккаунтов`,
-      `${cameraLimits["3"]} камер`,
-    ],
+    title: "ultima",
+    description: "fullFunctionality",
+    radioLabels: ["4role", "20account", "15camera"],
     price: cost["3"],
   },
 ];

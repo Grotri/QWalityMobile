@@ -1,5 +1,6 @@
 import { supportLink } from "@/src/constants/support";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Linking, Text, View } from "react-native";
 import { ProfileIcon } from "../../../../assets/icons";
 import { EErrors } from "../../../constants/errors";
@@ -23,6 +24,7 @@ import { IErrors, initialErrors } from "./types";
 
 const Profile = () => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const { user, setUser } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
@@ -41,16 +43,16 @@ const Profile = () => {
   const validate = (): boolean => {
     const newErrors: IErrors = {
       login: !userInfo.login.trim()
-        ? EErrors.required
+        ? t(EErrors.required)
         : !emailPattern.test(userInfo.login.trim())
-        ? EErrors.email
+        ? t(EErrors.email)
         : "",
-      code: !code.trim() ? EErrors.required : "",
+      code: !code.trim() ? t(EErrors.required) : "",
       inn:
         !userInfo.inn || !userInfo.inn.trim()
-          ? EErrors.required
+          ? t(EErrors.required)
           : !innPattern.test(userInfo.inn.trim())
-          ? EErrors.inn
+          ? t(EErrors.inn)
           : "",
     };
     setErrors(newErrors);
@@ -68,12 +70,12 @@ const Profile = () => {
         setIsEditMode(false);
         setCode("");
         setUser(newProfile);
-        showSuccessToast("Данные профиля изменены");
+        showSuccessToast(t("profileDataChanged"));
       } else {
-        showErrorToast(EErrors.fields);
+        showErrorToast(t(EErrors.fields));
       }
     } else {
-      showInfoToast(EErrors.noChanges);
+      showInfoToast(t(EErrors.noChanges));
     }
   };
 
@@ -84,14 +86,14 @@ const Profile = () => {
   return (
     <PageTemplate
       mustScroll={screenHeight < 700 && isEditMode}
-      headerText="Профиль"
+      headerText={t("profile")}
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
     >
       <View style={styles.profileWrapper}>
         <ProfileIcon />
         <View style={styles.card}>
           <View>
-            <Text style={styles.cardPointTitle}>Электронная почта / логин</Text>
+            <Text style={styles.cardPointTitle}>{t("emailOrLoginChange")}</Text>
             {!isEditMode ? (
               <Text style={styles.cardPointData}>{userInfo.login}</Text>
             ) : (
@@ -110,14 +112,14 @@ const Profile = () => {
             )}
           </View>
           <View>
-            <Text style={styles.cardPointTitle}>Роль</Text>
+            <Text style={styles.cardPointTitle}>{t("role")}</Text>
             <Text style={styles.cardPointData}>
-              {ERoles[user.role as keyof typeof ERoles]}
+              {t(ERoles[user.role as keyof typeof ERoles])}
             </Text>
           </View>
           {user.role === "owner" && (
             <View>
-              <Text style={styles.cardPointTitle}>ИНН</Text>
+              <Text style={styles.cardPointTitle}>{t("inn")}</Text>
               {!isEditMode ? (
                 <Text style={styles.cardPointData}>{userInfo.inn}</Text>
               ) : (
@@ -146,7 +148,7 @@ const Profile = () => {
                 color="blue"
                 onPress={() => setIsEditMode(true)}
               >
-                <Text style={styles.btnText}>Изменить данные</Text>
+                <Text style={styles.btnText}>{t("editData")}</Text>
               </Button>
             )}
             {user.role === "owner" && (
@@ -155,7 +157,7 @@ const Profile = () => {
                 color="blue"
                 onPress={() => navigate("SubscriptionChange")}
               >
-                <Text style={styles.btnText}>Управлять подпиской</Text>
+                <Text style={styles.btnText}>{t("manageSubscription")}</Text>
               </Button>
             )}
             {["owner", "administrator"].includes(user.role) && (
@@ -164,7 +166,7 @@ const Profile = () => {
                 color="blue"
                 onPress={() => navigate("Admin")}
               >
-                <Text style={styles.btnText}>Админ панель</Text>
+                <Text style={styles.btnText}>{t("adminPanel")}</Text>
               </Button>
             )}
           </>
@@ -172,7 +174,7 @@ const Profile = () => {
           <>
             <View style={styles.confirmationWrapper}>
               <Input
-                label="Код подтверждения"
+                label={t("confirmationCode")}
                 value={code}
                 onChangeText={(code) => {
                   setCode(code);
@@ -188,22 +190,22 @@ const Profile = () => {
                 errorText={errors.code}
               />
               <Button style={styles.codeBtn} color="darkBlue">
-                <Text style={styles.codeBtnText}>Отправить код</Text>
+                <Text style={styles.codeBtnText}>{t("sendCode")}</Text>
               </Button>
             </View>
             <Button style={styles.btn} color="blue" onPress={saveChanges}>
-              <Text style={styles.btnText}>Сохранить изменения</Text>
+              <Text style={styles.btnText}>{t("saveChanges")}</Text>
             </Button>
             <Button style={styles.btn} color="blue" onPress={cancel}>
-              <Text style={styles.btnText}>Отменить</Text>
+              <Text style={styles.btnText}>{t("cancelAction")}</Text>
             </Button>
             <View style={styles.supportTextWrapper}>
-              <Text style={styles.supportText}>Нет доступа к почте?</Text>
+              <Text style={styles.supportText}>{t("noAccessToEmail")}</Text>
               <Button onPress={() => Linking.openURL(supportLink)}>
                 <Text
                   style={[styles.supportText, styles.supportTextUnderlined]}
                 >
-                  Обратитесь в тех. поддержку
+                  {t("contactTechSupport")}
                 </Text>
               </Button>
             </View>
