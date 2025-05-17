@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, View } from "react-native";
 import { LogoIcon, SolarPanelIcon, WaveIcon } from "../../../../assets/icons";
 import { screenWidth } from "../../../constants/screenSize";
@@ -11,6 +12,7 @@ import { styles } from "./styles";
 let hasScrolledOnce = false;
 
 const Home = () => {
+  const { t } = useTranslation();
   const { navigate } = useAuthNavigation();
   const scrollRef = useRef<ScrollView>(null);
 
@@ -52,15 +54,12 @@ const Home = () => {
           <Text
             style={[styles.headerTitle, screenWidth <= 360 && { fontSize: 20 }]}
           >
-            Добро пожаловать в QWality
+            {t("welcome")}
           </Text>
           <LogoIcon width={screenWidth * 0.25} />
         </View>
         <View style={styles.line} />
-        <Text style={styles.welcomeText}>
-          Многофункциональное приложение для отслеживания дефектов солнечных
-          панелей
-        </Text>
+        <Text style={styles.welcomeText}>{t("description")}</Text>
         <View style={styles.waveWrapper}>
           <View style={[styles.solarIcon, { marginBottom: 52 }]}>
             <SolarPanelIcon width={screenWidth * 0.33} />
@@ -70,28 +69,26 @@ const Home = () => {
           </View>
         </View>
         <View style={styles.list}>
-          <HomeListPoint text="Точность до 99%" />
-          <HomeListPoint text="Отчетность в реальном времени" />
-          <HomeListPoint text="Многоуровневый доступ по ролям" />
-          <HomeListPoint text="Тонкая настройка нейросети" />
+          <HomeListPoint text={t("accuracy")} />
+          <HomeListPoint text={t("realtime_reporting")} />
+          <HomeListPoint text={t("role_based_access")} />
+          <HomeListPoint text={t("neural_network_tuning")} />
         </View>
         <View style={styles.btns}>
-          <Text style={styles.improveText}>
-            Улучшите свое производство с QWality
-          </Text>
+          <Text style={styles.improveText}>{t("improve_production")}</Text>
           <Button
             color="welcomeBrightBlue"
             style={styles.brightBlueBtn}
             onPress={() => navigate("Registration")}
           >
-            <Text style={styles.brightBlueBtnText}>Зарегистрироваться</Text>
+            <Text style={styles.brightBlueBtnText}>{t("signUp")}</Text>
           </Button>
           <Button
             color="welcomeBlue"
             style={styles.blueBtn}
             onPress={() => navigate("Login")}
           >
-            <Text style={styles.blueBtnText}>Уже есть аккаунт? Войти</Text>
+            <Text style={styles.blueBtnText}>{t("alreadyHaveAccount")}</Text>
           </Button>
         </View>
       </View>

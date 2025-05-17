@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { CrossIcon } from "../../../../assets/icons";
 import useCamerasStore from "../../../hooks/useCamerasStore";
@@ -12,6 +13,7 @@ import { IAddCameraModal } from "./types";
 const AddCameraModal: FC<IAddCameraModal> = ({ isOpen, setIsOpen }) => {
   const styles = getStyles();
   const palette = usePalette();
+  const { t } = useTranslation();
   const { addCamera, errors, setErrorsField, refreshErrors } =
     useCamerasStore();
   const [name, setName] = useState<string>("");
@@ -34,10 +36,10 @@ const AddCameraModal: FC<IAddCameraModal> = ({ isOpen, setIsOpen }) => {
               style={styles.crossIcon}
               onClick={() => setIsOpen(false)}
             />
-            <Text style={styles.modalTitle}>Добавить камеру</Text>
+            <Text style={styles.modalTitle}>{t("addCamera")}</Text>
           </View>
           <Input
-            label="Название"
+            label={t("name")}
             value={name}
             onChangeText={(name) => {
               setName(name);
@@ -51,7 +53,7 @@ const AddCameraModal: FC<IAddCameraModal> = ({ isOpen, setIsOpen }) => {
             maxLength={20}
           />
           <Input
-            label="Ссылка на камеру"
+            label={t("cameraLink")}
             value={link}
             onChangeText={(link) => {
               setLink(link);
@@ -68,7 +70,7 @@ const AddCameraModal: FC<IAddCameraModal> = ({ isOpen, setIsOpen }) => {
             color="modal"
             onPress={() => addCamera(name, link)}
           >
-            <Text style={styles.btnText}>Добавить</Text>
+            <Text style={styles.btnText}>{t("add")}</Text>
           </Button>
         </View>
       </Modal>

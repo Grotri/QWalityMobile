@@ -1,5 +1,6 @@
 import useAuthStore from "@/src/hooks/useAuthStore";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { EErrors } from "../../../constants/errors";
 import { emailPattern } from "../../../constants/patterns";
@@ -14,6 +15,7 @@ import { IErrors, initialErrors } from "./types";
 
 const ForgotPassword = () => {
   const { navigate } = useAuthNavigation();
+  const { t } = useTranslation();
   const { sendResetCode, restorePassword } = useAuthStore();
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState<string>("");
@@ -23,15 +25,15 @@ const ForgotPassword = () => {
   const validate = (): boolean => {
     const newErrors: IErrors = {
       email: !email.trim()
-        ? EErrors.required
+        ? t(EErrors.required)
         : !emailPattern.test(email.trim())
-        ? EErrors.email
+        ? t(EErrors.email)
         : "",
-      code: !code.trim() ? EErrors.required : "",
+      code: !code.trim() ? t(EErrors.required) : "",
       password: !password.trim()
-        ? EErrors.required
+        ? t(EErrors.required)
         : password.trim().length < 8
-        ? EErrors.password
+        ? t(EErrors.password)
         : "",
     };
 
@@ -43,20 +45,21 @@ const ForgotPassword = () => {
     if (validate()) {
       restorePassword(email.trim(), code.trim(), password.trim(), navigate);
     } else {
-      showErrorToast(EErrors.fields);
+      showErrorToast(t(EErrors.fields));
     }
   };
 
   return (
     <GradientPageTemplate
-      headerText="Восстановление пароля"
+      headerText={t("passwordRecovery")}
       onHeaderClick={() => navigate("Login", { direction: "backward" })}
       mustScroll={false}
+      toggleLanguage
     >
       <View style={styles.wrapper}>
         <View style={styles.fields}>
           <Input
-            label="Почта"
+            label={t("email")}
             value={email}
             onChangeText={(email) => {
               setEmail(email);
@@ -68,7 +71,7 @@ const ForgotPassword = () => {
           />
           <View style={styles.confirmationWrapper}>
             <Input
-              label="Код подтверждения"
+              label={t("confirmationCode")}
               value={code}
               onChangeText={(code) => {
                 setCode(code);
@@ -85,11 +88,11 @@ const ForgotPassword = () => {
               color="blueTransparent"
               onPress={() => sendResetCode(email.trim())}
             >
-              <Text style={styles.codeBtnText}>Отправить код</Text>
+              <Text style={styles.codeBtnText}>{t("sendCode")}</Text>
             </Button>
           </View>
           <InputPassword
-            label="Новый пароль"
+            label={t("newPassword")}
             value={password}
             onChangeText={(password) => {
               setPassword(password);
@@ -103,7 +106,7 @@ const ForgotPassword = () => {
           style={styles.changeBtn}
           onPress={changePassword}
         >
-          <Text style={styles.changeBtnText}>Изменить пароль</Text>
+          <Text style={styles.changeBtnText}>{t("changePassword")}</Text>
         </Button>
       </View>
     </GradientPageTemplate>

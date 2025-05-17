@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { convertISODate } from "../../../helpers/formatDate";
 import Button from "../../atoms/Button";
@@ -13,6 +14,7 @@ const Defect: FC<IDefectItem> = ({
   pressableIcon = false,
 }) => {
   const styles = getStyles();
+  const { t } = useTranslation();
   const { name, date } = defect;
 
   const clickDefect = () => {
@@ -34,7 +36,7 @@ const Defect: FC<IDefectItem> = ({
           </View>
         )}
         <View>
-          <Text style={styles.itemName}>{name}</Text>
+          <Text style={styles.itemName}>{t(name)}</Text>
           <Text style={styles.itemDate}>{convertISODate(date)}</Text>
         </View>
       </View>

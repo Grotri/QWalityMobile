@@ -1,13 +1,14 @@
 import { create } from "zustand";
-import { IStoreStatus } from "../model/misc";
+import { EErrors } from "../constants/errors";
+import { ERoles } from "../constants/roles";
 import {
   showErrorToast,
   showInfoToast,
   showSuccessToast,
 } from "../helpers/toast";
-import { EErrors } from "../constants/errors";
+import i18n from "../i18n";
+import { IStoreStatus } from "../model/misc";
 import { IUser } from "../model/user";
-import { ERoles } from "../constants/roles";
 
 export interface IErrors {
   login: string;
@@ -43,14 +44,14 @@ const useAccountStore = create<IUseAccountStore>((set, get) => ({
         error: false,
       }));
     } catch (error) {
-      showErrorToast("Не удалось добавить аккаунт");
+      showErrorToast(i18n.t("failedToAddAccount"));
       console.error(error);
       set({ error, loading: false });
     }
   },
 
   registerAccount: (account) => {
-    const currRole = ERoles[account.role as keyof typeof ERoles];
+    const currRole = i18n.t(ERoles[account.role as keyof typeof ERoles]);
 
     try {
       set({ loading: true, error: null });
@@ -60,9 +61,9 @@ const useAccountStore = create<IUseAccountStore>((set, get) => ({
         loading: false,
         error: false,
       }));
-      showSuccessToast(`${currRole} создан`);
+      showSuccessToast(`${currRole} ${i18n.t("created")}`);
     } catch (error) {
-      showErrorToast("Не удалось создать аккаунт");
+      showErrorToast(i18n.t("failedToCreateAccount"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -73,11 +74,11 @@ const useAccountStore = create<IUseAccountStore>((set, get) => ({
     const { login, password } = newAccount;
 
     const newError: IErrors = {
-      login: !login.trim() ? EErrors.required : "",
+      login: !login.trim() ? i18n.t(EErrors.required) : "",
       password: !password.trim()
-        ? EErrors.required
+        ? i18n.t(EErrors.required)
         : password.trim().length < 8
-        ? EErrors.password
+        ? i18n.t(EErrors.password)
         : "",
     };
 
@@ -103,17 +104,17 @@ const useAccountStore = create<IUseAccountStore>((set, get) => ({
             loading: false,
             error: false,
           }));
-          showSuccessToast(`Данные аккаунта изменены`);
+          showSuccessToast(i18n.t("accountDataChanged"));
         } catch (error) {
-          showErrorToast("Не удалось изменить данные");
+          showErrorToast(i18n.t("failedToChangeData"));
           console.error(error);
           set({ error, loading: false });
         }
       } else {
-        showErrorToast("Сначала корректно заполните поля формы");
+        showErrorToast(i18n.t("fillFormCorrectlyFirst"));
       }
     } else {
-      showInfoToast(EErrors.noChanges);
+      showInfoToast(i18n.t(EErrors.noChanges));
     }
   },
 
@@ -127,7 +128,7 @@ const useAccountStore = create<IUseAccountStore>((set, get) => ({
   deleteAccount: (index) => {
     const { accounts, errors } = get();
     const userToDelete = accounts[index];
-    const role = ERoles[userToDelete.role as keyof typeof ERoles];
+    const role = i18n.t(ERoles[userToDelete.role as keyof typeof ERoles]);
 
     try {
       set({ loading: true, error: null });
@@ -137,9 +138,9 @@ const useAccountStore = create<IUseAccountStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      showSuccessToast(`${role} ${userToDelete.login} удален`);
+      showSuccessToast(`${role} ${userToDelete.login} ${i18n.t("deleted")}`);
     } catch (error) {
-      showErrorToast("Не удалось удалить аккаунт");
+      showErrorToast(i18n.t("failedToDeleteAccount"));
       console.error(error);
       set({ error, loading: false });
     }

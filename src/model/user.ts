@@ -1,4 +1,6 @@
+export type TTheme = "light" | "dark";
 export type TFontSize = "small" | "default" | "large";
+export type TLanguage = "ru" | "eng";
 
 export interface IUser {
   id: string;
@@ -7,7 +9,7 @@ export interface IUser {
   password: string;
   subscription?: string;
   role: string;
-  theme: "light" | "dark";
+  theme: TTheme;
   fontSize: TFontSize;
 }
 

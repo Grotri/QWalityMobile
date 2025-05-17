@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable, Text, View } from "react-native";
 import { CheckIcon } from "../../../../assets/icons";
 import useAccountStore from "../../../hooks/useAccountStore";
@@ -12,6 +13,7 @@ import { styles } from "./styles";
 
 const Registration = () => {
   const { navigate } = useAuthNavigation();
+  const { t } = useTranslation();
   const {
     errors,
     clearErrors,
@@ -36,14 +38,15 @@ const Registration = () => {
 
   return (
     <GradientPageTemplate
-      headerText="Регистрация"
+      headerText={t("registration")}
       onHeaderClick={() => navigate("Home", { direction: "backward" })}
       mustScroll={false}
+      toggleLanguage
     >
       <View style={styles.wrapper}>
         <View style={styles.fields}>
           <Input
-            label="ИНН"
+            label={t("inn")}
             value={user.inn || ""}
             onChangeText={(inn) => {
               setUserField("inn", inn);
@@ -55,7 +58,7 @@ const Registration = () => {
             errorText={errors.inn}
           />
           <Input
-            label="Почта"
+            label={t("email")}
             value={user.login}
             onChangeText={(email) => {
               setUserField("login", email);
@@ -67,7 +70,7 @@ const Registration = () => {
           />
           <View style={styles.confirmationWrapper}>
             <Input
-              label="Код подтверждения"
+              label={t("confirmationCode")}
               value={code}
               onChangeText={(code) => {
                 setCode(code);
@@ -84,11 +87,11 @@ const Registration = () => {
               color="blueTransparent"
               onPress={() => sendRegisterCode(user.login.trim())}
             >
-              <Text style={styles.codeBtnText}>Отправить код</Text>
+              <Text style={styles.codeBtnText}>{t("sendCode")}</Text>
             </Button>
           </View>
           <InputPassword
-            label="Пароль"
+            label={t("password")}
             value={user.password}
             onChangeText={(password) => {
               setUserField("password", password);
@@ -105,7 +108,7 @@ const Registration = () => {
             register(code, isChecked, addAccount);
           }}
         >
-          <Text style={styles.createBtnText}>Создать аккаунт</Text>
+          <Text style={styles.createBtnText}>{t("registerAccount")}</Text>
         </Button>
         <View style={styles.checkboxWrapper}>
           <Pressable
@@ -129,9 +132,9 @@ const Registration = () => {
                 !!errors.agreement && styles.checkboxTextError,
               ]}
             >
-              Я принимаю{" "}
+              {t("iAccept")}{" "}
               <Text style={styles.checkboxTextUnderlined}>
-                условия пользовательского соглашения
+                {t("termsOfUse")}
               </Text>
             </Text>
           </Pressable>

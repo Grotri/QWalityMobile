@@ -83,7 +83,6 @@ export const styles = StyleSheet.create({
   blueBtn: {
     padding: 8,
     borderRadius: 14,
-    width: "80%",
     minWidth: "60%",
   },
   blueBtnText: {

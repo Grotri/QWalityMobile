@@ -1,16 +1,18 @@
 import React, { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlatList, View } from "react-native";
-import GradientPageTemplate from "../../templates/GradientPageTemplate";
-import { styles } from "./styles";
-import SliderCard from "../../organisms/SliderCard";
 import { ArrowLeftIcon, ArrowRightIcon } from "../../../../assets/icons";
 import { screenWidth } from "../../../constants/screenSize";
-import useAuthStore from "../../../hooks/useAuthStore";
 import { subscriptions } from "../../../constants/subscriptions";
+import useAuthStore from "../../../hooks/useAuthStore";
 import { useSubscriptionNavigation } from "../../../hooks/useTypedNavigation";
+import SliderCard from "../../organisms/SliderCard";
+import GradientPageTemplate from "../../templates/GradientPageTemplate";
+import { styles } from "./styles";
 
 const Subscription = () => {
   const { navigate } = useSubscriptionNavigation();
+  const { t } = useTranslation();
   const { setUserField } = useAuthStore();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const flatListRef = useRef<FlatList>(null);
@@ -24,7 +26,7 @@ const Subscription = () => {
 
   return (
     <GradientPageTemplate
-      headerText="Выберите уровень подписки"
+      headerText={t("selectSubscriptionLevel")}
       mustScroll={false}
     >
       <View style={styles.wrapper}>

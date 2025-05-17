@@ -8,6 +8,7 @@ import {
   showInfoToast,
   showSuccessToast,
 } from "../helpers/toast";
+import i18n from "../i18n";
 import { ICamera } from "../model/camera";
 import { IStoreStatus } from "../model/misc";
 
@@ -55,7 +56,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         error: false,
       });
     } catch (error) {
-      showErrorToast("Не удалось загрузить список камер");
+      showErrorToast(i18n.t("failedToLoadCameraList"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -66,11 +67,11 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
 
   validate: (name, link) => {
     const newErrors: IErrors = {
-      name: !name.trim() ? EErrors.required : "",
+      name: !name.trim() ? i18n.t(EErrors.required) : "",
       link: !link.trim()
-        ? EErrors.required
+        ? i18n.t(EErrors.required)
         : !linkPattern.test(link.trim())
-        ? EErrors.link
+        ? i18n.t(EErrors.link)
         : "",
     };
 
@@ -86,7 +87,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         id: uuid.v4(),
         online: true,
         title: name.trim(),
-        uptime: "0д 0ч 0м",
+        uptime: i18n.t("zeroTime"),
         defects: [],
         link: link.trim(),
       };
@@ -96,15 +97,17 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
           loading: true,
           cameras: [...cameras, newCamera],
         });
-        showSuccessToast(`Камера "${name}" успешно добавлена`);
+        showSuccessToast(
+          `${i18n.t("camera")} "${name}" ${i18n.t("cameraAddedSuccessfully")}`
+        );
       } catch (error) {
         console.log(error);
-        showErrorToast("Произошла ошибка при добавлении камеры");
+        showErrorToast(i18n.t("cameraAddError"));
       } finally {
         set({ loading: false });
       }
     } else {
-      showErrorToast(EErrors.fields);
+      showErrorToast(i18n.t(EErrors.fields));
     }
   },
 
@@ -127,18 +130,18 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
             ),
           });
           onEdit(null);
-          showSuccessToast("Данные камеры успешно отредактированы");
+          showSuccessToast(i18n.t("cameraDataEditedSuccessfully"));
         } catch (error) {
           console.log(error);
-          showErrorToast("Произошла ошибка при редактировании камеры");
+          showErrorToast(i18n.t("cameraEditError"));
         } finally {
           set({ loading: false });
         }
       } else {
-        showErrorToast(EErrors.fields);
+        showErrorToast(i18n.t(EErrors.fields));
       }
     } else {
-      showInfoToast(EErrors.noChanges);
+      showInfoToast(i18n.t(EErrors.noChanges));
     }
   },
 
@@ -156,9 +159,11 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      showSuccessToast(`Камера "${camera.title}" успешно перемещена в корзину`);
+      showSuccessToast(
+        `${i18n.t("camera")} "${camera.title}" ${i18n.t("cameraMovedToTrash")}`
+      );
     } catch (error) {
-      showErrorToast("Не удалось удалить камеру");
+      showErrorToast(i18n.t("failedToDeleteCamera"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -171,7 +176,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         c.id === cameraId ? { ...c, deletedAt: undefined } : c
       ),
     });
-    showSuccessToast("Камера восстановлена");
+    showSuccessToast(i18n.t("cameraRestored"));
   },
 
   deleteHistory: (id) => {
@@ -188,9 +193,9 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      showSuccessToast(`История камеры успешно удалена`);
+      showSuccessToast(i18n.t("cameraHistoryDeleted"));
     } catch (error) {
-      showErrorToast("Не удалось удалить историю камеры");
+      showErrorToast(i18n.t("failedToDeleteCameraHistory"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -216,9 +221,9 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      showSuccessToast("Дефект перемещен в корзину");
+      showSuccessToast(i18n.t("defectMovedToTrash"));
     } catch (error) {
-      showErrorToast("Не удалось удалить дефект");
+      showErrorToast(i18n.t("failedToDeleteDefect"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -242,9 +247,9 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      showSuccessToast("Дефект восстановлен");
+      showSuccessToast(i18n.t("defectRecovered"));
     } catch (error) {
-      showErrorToast("Не удалось восстановить дефект");
+      showErrorToast(i18n.t("failedToRestoreDefect"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -262,9 +267,9 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      showSuccessToast("Корзина очищена");
+      showSuccessToast(i18n.t("trashCleared"));
     } catch (error) {
-      showErrorToast("Не удалось очистить корзину");
+      showErrorToast(i18n.t("failedToClearTrash"));
       console.error(error);
       set({ error, loading: false });
     }
@@ -274,12 +279,12 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     const { cameras } = get();
 
     if (!startDate || !endDate) {
-      showErrorToast(EErrors.chooseDates);
+      showErrorToast(i18n.t(EErrors.chooseDates));
       return;
     }
 
     if (startDate > endDate) {
-      showErrorToast(EErrors.timeDates);
+      showErrorToast(i18n.t(EErrors.timeDates));
       return;
     }
 
@@ -312,7 +317,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
       }));
 
       if (!foundSomething) {
-        showInfoToast("За выбранный период дефекты не найдены");
+        showInfoToast(i18n.t("noDefectsFoundInPeriod"));
         set({ loading: false });
         return;
       }
@@ -323,9 +328,9 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         error: false,
       });
 
-      showSuccessToast("Корзина за данный промежуток очищена");
+      showSuccessToast(i18n.t("trashClearedForPeriod"));
     } catch (error) {
-      showErrorToast("Не удалось очистить корзину за данный промежуток");
+      showErrorToast(i18n.t("failedToClearTrashForPeriod"));
       console.error(error);
       set({ error, loading: false });
     }

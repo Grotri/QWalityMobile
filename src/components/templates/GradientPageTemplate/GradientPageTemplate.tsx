@@ -20,6 +20,7 @@ const GradientPageTemplate = forwardRef(
       headerText,
       onHeaderClick,
       underlined = false,
+      toggleLanguage = false,
     }: PropsWithChildren<IGradientPageTemplate>,
     scrollRef: Ref<ScrollView>
   ) => {
@@ -36,6 +37,7 @@ const GradientPageTemplate = forwardRef(
             headerText={headerText}
             onClick={onHeaderClick}
             underlined={underlined}
+            languageToggle={toggleLanguage}
           />
         )}
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>

@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { screenHeight, screenWidth } from "../../../constants/screenSize";
 import { usePalette } from "../../../hooks/usePalette";
@@ -18,6 +19,7 @@ const SliderCard: FC<ISliderCard> = ({
 }) => {
   const styles = getStyles();
   const palette = usePalette();
+  const { t } = useTranslation();
 
   const isSmallHeight = screenHeight < 700;
 
@@ -25,7 +27,7 @@ const SliderCard: FC<ISliderCard> = ({
     <View style={{ width: screenWidth }} key={id}>
       <View style={[styles.card, { paddingVertical: isSmallHeight ? 16 : 20 }]}>
         <View style={styles.topView}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{t(title)}</Text>
           <View style={styles.line} />
           <Text
             style={[
@@ -37,19 +39,26 @@ const SliderCard: FC<ISliderCard> = ({
               },
             ]}
           >
-            {description}
+            {t(description)}
           </Text>
           <View style={[styles.radios, { gap: isSmallHeight ? 24 : 40 }]}>
             {radioLabels.map((label: string, index: number) => (
-              <Radio label={label} isChecked key={index} style={styles.radio} />
+              <Radio
+                label={t(label)}
+                isChecked
+                key={index}
+                style={styles.radio}
+              />
             ))}
           </View>
         </View>
         <View style={styles.bottomView}>
-          <Text style={styles.price}>{price} руб. в месяц</Text>
+          <Text style={styles.price}>
+            {price} {t("rubPerMonth")}
+          </Text>
           {currentId !== undefined && currentId === id ? (
             <View style={[styles.btn, { backgroundColor: palette.btnChoosen }]}>
-              <Text style={styles.btnText}>Выбрано</Text>
+              <Text style={styles.btnText}>{t("selected")}</Text>
             </View>
           ) : (
             <Button
@@ -57,7 +66,7 @@ const SliderCard: FC<ISliderCard> = ({
               style={styles.btn}
               onPress={onPress}
             >
-              <Text style={styles.btnText}>Выбрать</Text>
+              <Text style={styles.btnText}>{t("choose")}</Text>
             </Button>
           )}
         </View>

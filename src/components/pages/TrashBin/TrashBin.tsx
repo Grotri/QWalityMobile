@@ -2,6 +2,7 @@ import { showErrorToast } from "@/src/helpers/toast";
 import { useCameraLimits } from "@/src/helpers/useCameraLimits";
 import { ICamera } from "@/src/model/camera";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { CrossIcon, TrashBinIcon } from "../../../../assets/icons";
 import useAuthStore from "../../../hooks/useAuthStore";
@@ -20,6 +21,7 @@ import { getStyles } from "./styles";
 
 const TrashBin = () => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const {
     cameras,
     recoverDefect,
@@ -70,7 +72,7 @@ const TrashBin = () => {
 
   return (
     <PageTemplate
-      headerText="Корзина"
+      headerText={t("trash")}
       underlined
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
       isWholeBlurOn={isModalOpen}
@@ -78,7 +80,7 @@ const TrashBin = () => {
         deletedDefects.length > 0 && user.role !== "user" ? (
           <BottomFixIcon
             icon={<TrashBinIcon width={36} height={36} />}
-            text="Очистить"
+            text={t("clearCart")}
             onPress={() => setIsModalOpen(true)}
             gap={2}
             marginRight={24}
@@ -95,7 +97,7 @@ const TrashBin = () => {
                 <Defect
                   key={item.data.id}
                   defect={item.data as IDefect}
-                  textBtn={user.role !== "user" ? "Восстановить" : undefined}
+                  textBtn={user.role !== "user" ? t("restore") : undefined}
                   onPress={() => recoverDefect(item.cameraId, item.data.id)}
                 />
               );
@@ -110,7 +112,7 @@ const TrashBin = () => {
                     ) {
                       recoverCamera(item.cameraId);
                     } else {
-                      showErrorToast("Достигнут лимит камер");
+                      showErrorToast(t("camerasLimitReached"));
                     }
                   }}
                 />
@@ -118,7 +120,7 @@ const TrashBin = () => {
             }
           })
         ) : (
-          <Text style={styles.noDefects}>Корзина пуста</Text>
+          <Text style={styles.noDefects}>{t("trashEmpty")}</Text>
         )}
       </View>
       <Modal isVisible={isModalOpen} setIsVisible={setIsModalOpen}>
@@ -128,7 +130,7 @@ const TrashBin = () => {
               style={styles.crossIcon}
               onClick={() => setIsModalOpen(false)}
             />
-            <Text style={styles.modalTitle}>Удалить историю</Text>
+            <Text style={styles.modalTitle}>{t("deleteHistory")}</Text>
           </View>
           <View style={styles.row}>
             <DatePicker
@@ -140,7 +142,7 @@ const TrashBin = () => {
           </View>
           <View style={styles.row}>
             <Button color="red" style={styles.btnModal} onPress={clearTrashBin}>
-              <Text style={styles.btnModalText}>Удалить всё</Text>
+              <Text style={styles.btnModalText}>{t("deleteAll")}</Text>
             </Button>
             <View style={styles.empty} />
             <Button
@@ -148,7 +150,7 @@ const TrashBin = () => {
               style={styles.btnModal}
               onPress={() => clearTrashBinByDates(startDate, endDate)}
             >
-              <Text style={styles.btnModalText}>Удалить</Text>
+              <Text style={styles.btnModalText}>{t("delete")}</Text>
             </Button>
           </View>
         </View>

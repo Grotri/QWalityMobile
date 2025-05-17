@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import { LogoIcon, MenuProfileIcon } from "../../../../assets/icons";
 import { menuItems } from "../../../constants/menuItems";
@@ -10,6 +11,7 @@ import { IMenu, IMenuItem } from "./types";
 
 const Menu: FC<IMenu> = ({ isExpanded, setIsExpanded }) => {
   const { navigate } = useMainNavigation();
+  const { t } = useTranslation();
   const styles = getStyles();
 
   const toggle = () => {
@@ -22,13 +24,13 @@ const Menu: FC<IMenu> = ({ isExpanded, setIsExpanded }) => {
         <Pressable style={[styles.headerBtn, { width: 44 }]} onPress={toggle}>
           <Hamburger active={isExpanded} />
           <Text style={styles.headerBtnTxt}>
-            {isExpanded ? "Скрыть" : "Меню"}
+            {isExpanded ? t("hide") : t("menu")}
           </Text>
         </Pressable>
         <LogoIcon width={83} />
         <Pressable style={styles.headerBtn} onPress={() => navigate("Profile")}>
           <MenuProfileIcon />
-          <Text style={styles.headerBtnTxt}>Профиль</Text>
+          <Text style={styles.headerBtnTxt}>{t("profile")}</Text>
         </Pressable>
       </View>
       {menuItems.map((item: IMenuItem, index: number) => (
@@ -36,7 +38,7 @@ const Menu: FC<IMenu> = ({ isExpanded, setIsExpanded }) => {
           key={index}
           index={index}
           icon={item.icon}
-          title={item.title}
+          title={t(item.title)}
           isRoundBorder={index === menuItems.length - 1}
           isExpanded={isExpanded}
           onPress={() => navigate(item.path)}

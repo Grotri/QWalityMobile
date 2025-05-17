@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import Accordion from "react-native-collapsible/Accordion";
 import {
@@ -21,6 +22,7 @@ import { getStyles } from "./styles";
 import { ICamera, IDefect } from "./types";
 
 const Main = () => {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
@@ -50,8 +52,14 @@ const Main = () => {
   const offlineCameras = cameras.filter((camera) => !camera.online);
 
   const sections = [
-    { title: `Online (${onlineCameras.length})`, cameras: onlineCameras },
-    { title: `Offline (${offlineCameras.length})`, cameras: offlineCameras },
+    {
+      title: `${t("online")} (${onlineCameras.length})`,
+      cameras: onlineCameras,
+    },
+    {
+      title: `${t("offline")} (${offlineCameras.length})`,
+      cameras: offlineCameras,
+    },
   ];
 
   const handleSectionChange = (sections: number[]) => {
@@ -69,7 +77,7 @@ const Main = () => {
         <Text style={styles.title}>{section.title}</Text>
         {section.cameras.length > 0 && (
           <Input
-            placeholder="Поиск..."
+            placeholder={t("searchPlaceholder")}
             placeholderTextColor={palette.mainText}
             value={index === 0 ? onlineSearch : offlineSearch}
             onChangeText={(text) =>
@@ -101,8 +109,8 @@ const Main = () => {
         <View style={styles.emptyList}>
           <Text style={styles.emptyText}>
             {!section.cameras.length
-              ? "Камер в данной категории нет"
-              : "Нет камер по заданному поиску"}
+              ? t("noCamerasInCategory")
+              : t("noCamerasFound")}
           </Text>
         </View>
       );
@@ -142,12 +150,12 @@ const Main = () => {
         user.role !== "user" ? (
           <BottomFixIcon
             icon={<PlusIcon />}
-            text="Добавить камеру"
+            text={t("addCamera")}
             onPress={() => {
               if (cameras.length < cameraLimits) {
                 setIsAddCameraModalOpen(true);
               } else {
-                showErrorToast("Достигнут лимит камер");
+                showErrorToast(t("camerasLimitReached"));
               }
             }}
             marginRight={20}

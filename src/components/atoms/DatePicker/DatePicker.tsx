@@ -1,3 +1,4 @@
+import useAuthStore from "@/src/hooks/useAuthStore";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { FC, useState } from "react";
 import {
@@ -14,6 +15,7 @@ import { IDatePicker } from "./types";
 
 const DatePicker: FC<IDatePicker> = ({ date, setDate, datePickerStyle }) => {
   const styles = getStyles();
+  const { language } = useAuthStore();
   const [show, setShow] = useState<boolean>(false);
   const defaultDate = new Date();
 
@@ -57,7 +59,7 @@ const DatePicker: FC<IDatePicker> = ({ date, setDate, datePickerStyle }) => {
             display="default"
             is24Hour={true}
             onChange={onChange}
-            locale="ru"
+            locale={language}
           />
         ) : (
           <Modal transparent visible={show} animationType="slide">
@@ -70,7 +72,7 @@ const DatePicker: FC<IDatePicker> = ({ date, setDate, datePickerStyle }) => {
                 mode="date"
                 display="spinner"
                 onChange={onIOSChange}
-                locale="ru"
+                locale={language}
               />
             </View>
           </Modal>
