@@ -83,7 +83,7 @@ export const styles = StyleSheet.create({
   blueBtn: {
     padding: 8,
     borderRadius: 14,
-    minWidth: "60%",
+    minWidth: "70%",
   },
   blueBtnText: {
     fontSize: getFontSize(16),

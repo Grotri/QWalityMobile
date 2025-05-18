@@ -36,6 +36,8 @@ export const getStyles = () => {
       paddingHorizontal: 18,
       paddingVertical: 12,
       marginBottom: 8,
+      display: "flex",
+      gap: 4,
     },
     contentText: {
       fontSize: getFontSize(16),

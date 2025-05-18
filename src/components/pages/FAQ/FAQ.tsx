@@ -1,4 +1,5 @@
 import { supportLink } from "@/src/constants/support";
+import { formatAnswer } from "@/src/helpers/formatAnswer";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Linking, Pressable, Text, View } from "react-native";
@@ -24,7 +25,7 @@ const FAQ = () => {
 
   const renderHeader = (question: IQuestionSection, index: number) => (
     <View style={styles.header}>
-      <Text style={styles.headerText}>{question.title}</Text>
+      <Text style={styles.headerText}>{t(question.title)}</Text>
       <IconRotated
         icon={<ArrowAccordionIcon />}
         isActive={activeSections.includes(index)}
@@ -35,7 +36,11 @@ const FAQ = () => {
   const renderContent = (question: IQuestionSection) => {
     return (
       <View style={styles.content}>
-        <Text style={styles.contentText}>{question.answer}</Text>
+        {formatAnswer(t(question.answer)).map((line, index) => (
+          <Text style={styles.contentText} key={index}>
+            {line}
+          </Text>
+        ))}
       </View>
     );
   };
