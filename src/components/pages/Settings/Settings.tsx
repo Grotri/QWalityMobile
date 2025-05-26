@@ -178,7 +178,7 @@ const Settings = () => {
             <Text style={styles.btnText}>{t("deleteAccount")}</Text>
           </Button>
         )}
-        <Text style={styles.version}>QWality Release v1.0.0</Text>
+        <Text style={styles.version}>QWality Release v1.1.0</Text>
       </View>
       <Modal isVisible={isExitModalOpen} setIsVisible={setIsExitModalOpen}>
         <View style={styles.modal}>

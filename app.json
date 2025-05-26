@@ -43,8 +43,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "134cb9cf-c0b8-4ae1-bdc0-4e431b06787e"
+        "projectId": "54d980c3-d9e3-4cde-a6b8-021b6a290bf9"
       }
-    }
+    },
+    "owner": "daria_sushkova"
   }
 }
