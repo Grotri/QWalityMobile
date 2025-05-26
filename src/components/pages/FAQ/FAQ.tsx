@@ -55,7 +55,6 @@ const FAQ = () => {
           text={t("contactSupport")}
           onPress={() => Linking.openURL(supportLink)}
           marginRight={12}
-          marginBottom={28}
         />
       }
     >

@@ -1,4 +1,5 @@
-import React, { FC, Fragment, useEffect, useState } from "react";
+import { formatUptime } from "@/src/helpers/formatUptime";
+import React, { FC, Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import Accordion from "react-native-collapsible/Accordion";
@@ -45,8 +46,7 @@ const CameraAccordion: FC<ICameraAccordion> = ({
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
-  const { deleteDefect } = useCamerasStore();
-  const [activeSections, setActiveSections] = useState<number[]>([]);
+  const { activeSections, setActiveSections, deleteDefect } = useCamerasStore();
   const [cameraPages, setCameraPages] = useState<Record<string, number>>({});
   const [sortModalCameraId, setSortModalCameraId] = useState<string | null>(
     null
@@ -112,12 +112,10 @@ const CameraAccordion: FC<ICameraAccordion> = ({
     }
   };
 
-  useEffect(() => {
-    setActiveSections([]);
-  }, [sections.length]);
-
   const renderHeader = (camera: ICamera, index: number) => {
     const defects = camera.defects.filter((defect) => !defect.deletedAt);
+    const uptime = formatUptime(camera.uptime);
+
     return (
       <View style={styles.header} key={camera.id}>
         <View style={styles.headerMain}>
@@ -149,7 +147,10 @@ const CameraAccordion: FC<ICameraAccordion> = ({
               </Text>
             </View>
             <Text style={styles.uptime}>
-              {t("uptime")} {camera.uptime}
+              {t("uptime")} {uptime[0]}
+              {t("day")} {uptime[1]}
+              {t("hour")} {uptime[2]}
+              {t("minute")}
             </Text>
           </View>
         </View>
