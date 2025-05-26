@@ -1,8 +1,8 @@
 import React, { FC, useState } from "react";
-import { IInputPassword } from "./types";
-import Input from "../Input/Input";
 import { EyeIcon } from "../../../../assets/icons";
 import { usePalette } from "../../../hooks/usePalette";
+import Input from "../Input/Input";
+import { IInputPassword } from "./types";
 
 const InputPassword: FC<IInputPassword> = ({
   value,
@@ -17,6 +17,7 @@ const InputPassword: FC<IInputPassword> = ({
   errorStyles,
   iconColor,
   iconSize,
+  placeholder,
 }) => {
   const palette = usePalette();
   const [isSecured, setIsSecured] = useState<boolean>(true);
@@ -25,6 +26,7 @@ const InputPassword: FC<IInputPassword> = ({
     <Input
       secureTextEntry={isSecured}
       label={label}
+      placeholder={placeholder}
       value={value}
       onChangeText={onChangeText}
       customStyles={customStyles}

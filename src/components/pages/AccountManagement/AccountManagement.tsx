@@ -19,6 +19,7 @@ import Dropdown from "../../atoms/Dropdown";
 import IconRotated from "../../atoms/IconRotated";
 import Input from "../../atoms/Input";
 import InputPassword from "../../atoms/InputPassword";
+import Loader from "../../atoms/Loader/Loader";
 import PageTemplate from "../../templates/PageTemplate";
 import { getStyles } from "./styles";
 
@@ -40,6 +41,7 @@ const AccountManagement = () => {
   const [activeSections, setActiveSections] = useState<number[]>([]);
   const [sections, setSections] = useState<IUser[]>([...accounts]);
   const [isDdOpen, setIsDdOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleSectionChange = (sections: number[]) => {
     setActiveSections(sections);
@@ -68,10 +70,14 @@ const AccountManagement = () => {
   }, [activeSections]);
 
   useEffect(() => {
+    setIsLoading(true);
     const filteredAccounts = accounts.filter((acc) =>
       availableRoles.includes(acc.role)
     );
     setSections([...filteredAccounts]);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
   }, [accounts, user.role]);
 
   useEffect(() => {
@@ -118,6 +124,7 @@ const AccountManagement = () => {
         <InputPassword
           label={t("password")}
           value={section.password}
+          placeholder="********"
           onChangeText={(password) => {
             changeAccountField(section.id, "password", password);
             changeError(index, "password", "");
@@ -188,7 +195,11 @@ const AccountManagement = () => {
     >
       <TouchableWithoutFeedback onPress={closeDd}>
         <View style={styles.managerWrapper}>
-          {sections.length > 0 ? (
+          {isLoading && <Loader />}
+          {!isLoading && !sections.length && (
+            <Text style={styles.noAccounts}>{t("noManagedAccounts")}</Text>
+          )}
+          {!isLoading && !!sections.length && (
             <Accordion
               containerStyle={styles.accordion}
               sections={sections}
@@ -198,8 +209,6 @@ const AccountManagement = () => {
               onChange={handleSectionChange}
               touchableComponent={Pressable}
             />
-          ) : (
-            <Text style={styles.noAccounts}>{t("noManagedAccounts")}</Text>
           )}
         </View>
       </TouchableWithoutFeedback>
