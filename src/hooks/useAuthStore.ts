@@ -29,7 +29,7 @@ interface IUseAuthStore extends IStoreStatus {
   user: IUser;
   errors: IErrors;
   language: TLanguage;
-  fetchUserInfo: () => Promise<void>;
+  fetchUserInfo: (isWithTestSubs?: boolean) => Promise<void>;
   setLanguage: (lang: TLanguage) => void;
   setUserField: (field: keyof IUser, value: string) => void;
   setUser: (newUser: IUser) => void;
@@ -57,12 +57,12 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
   user: { ...initialUser },
   language: "ru",
 
-  fetchUserInfo: async () => {
+  fetchUserInfo: async (isWithTestSubs) => {
     try {
       set({ loading: true, error: null });
       const res = await getUserInfo();
       set({
-        user: convertUserInfo(res.data),
+        user: convertUserInfo(res.data, isWithTestSubs),
         loading: false,
         error: false,
       });
@@ -148,7 +148,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
         setToken(access_token);
         setRefresh(refresh_token);
 
-        await fetchUserInfo();
+        await fetchUserInfo(false);
         showSuccessToast(i18n.t("registrationSuccess"));
       } else {
         showErrorToast(i18n.t("registrationFailed"));
@@ -180,7 +180,7 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       setToken(access_token);
       setRefresh(refresh_token);
 
-      await fetchUserInfo();
+      await fetchUserInfo(true);
       showSuccessToast(i18n.t("loginSuccess"));
     } catch (error) {
       console.log(error);
