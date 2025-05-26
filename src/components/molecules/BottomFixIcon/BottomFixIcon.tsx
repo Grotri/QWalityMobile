@@ -1,6 +1,7 @@
 import { usePalette } from "@/src/hooks/usePalette";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, Path, RadialGradient, Stop } from "react-native-svg";
 import { getStyles } from "./styles";
 import { IBottomFixIcon } from "./types";
@@ -11,10 +12,11 @@ const BottomFixIcon: React.FC<IBottomFixIcon> = ({
   onPress,
   gap,
   marginRight,
-  marginBottom,
 }) => {
   const styles = getStyles();
   const palette = usePalette();
+  const insets = useSafeAreaInsets();
+  const bottomInset = Platform.OS === "android" ? insets.bottom + 4 : 28;
 
   return (
     <Pressable onPress={onPress} style={styles.wrapper}>
@@ -41,7 +43,9 @@ const BottomFixIcon: React.FC<IBottomFixIcon> = ({
         </Defs>
       </Svg>
 
-      <View style={[styles.btn, { gap, marginRight, marginBottom }]}>
+      <View
+        style={[styles.btn, { gap, marginRight, marginBottom: bottomInset }]}
+      >
         <View style={styles.circle}>{icon}</View>
         <Text style={styles.btnText}>{text}</Text>
       </View>

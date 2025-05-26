@@ -1,5 +1,6 @@
 import { screenWidth } from "@/src/constants/screenSize";
 import useAuthStore from "@/src/hooks/useAuthStore";
+import { TLanguage } from "@/src/model/user";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Text, TouchableWithoutFeedback, View } from "react-native";
@@ -35,10 +36,15 @@ const Header: FC<IHeader> = ({
             <Button
               style={styles.language}
               color="blueTransparent"
-              onPress={() => setLanguage(language === "eng" ? "ru" : "eng")}
+              onPress={() => {
+                const languages: TLanguage[] = ["ru", "eng", "fr"];
+                const nextIndex =
+                  (languages.indexOf(language) + 1) % languages.length;
+                setLanguage(languages[nextIndex]);
+              }}
             >
               <Text style={styles.languageText}>
-                {language === "eng" ? "en" : "ru"}
+                {language === "eng" ? "en" : language}
               </Text>
             </Button>
           )}

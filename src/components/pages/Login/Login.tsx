@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { EErrors } from "../../../constants/errors";
 import { showErrorToast } from "../../../helpers/toast";
-import useAccountStore from "../../../hooks/useAccountStore";
 import useAuthStore from "../../../hooks/useAuthStore";
 import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
 import Button from "../../atoms/Button";
@@ -17,7 +16,6 @@ const Login = () => {
   const { t } = useTranslation();
   const { navigate } = useAuthNavigation();
   const { login } = useAuthStore();
-  const { addAccount } = useAccountStore();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [errors, setErrors] = useState<IErrors>({ ...initialErrors });
@@ -38,7 +36,7 @@ const Login = () => {
 
   const handleLogin = () => {
     if (validate()) {
-      login(email.trim(), password.trim(), addAccount);
+      login(email.trim(), password.trim());
     } else {
       showErrorToast(t(EErrors.fields));
     }

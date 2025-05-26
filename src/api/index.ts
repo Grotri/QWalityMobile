@@ -2,7 +2,7 @@ import axios from "axios";
 import { showErrorToast } from "../helpers/toast";
 import i18n from "../i18n";
 import { forceLogout } from "./forceLogout";
-import { getRefresh, getToken, setToken } from "./token";
+import { getRefresh, getToken, setRefresh, setToken } from "./token";
 
 const api = axios.create({
   baseURL: "https://api.qwality.space",
@@ -11,9 +11,52 @@ const api = axios.create({
   },
 });
 
+export const plainAxios = axios.create();
+
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+  refreshSubscribers.push(cb);
+};
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+};
+
+const refreshAccessToken = async (): Promise<string | null> => {
+  const refreshToken = await getRefresh();
+  if (!refreshToken) return null;
+
+  try {
+    const res = await plainAxios.post(
+      "https://api.qwality.space/auth/refresh",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
+    );
+
+    const newAccessToken = res.data.access_token;
+    const newRefreshToken = res.data.refresh_token;
+
+    await setToken(newAccessToken);
+    if (newRefreshToken) {
+      await setRefresh(newRefreshToken);
+    }
+
+    return newAccessToken;
+  } catch {
+    return null;
+  }
+};
+
 api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
+  async (config) => {
+    const token = await getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,27 +72,30 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refreshToken = getRefresh();
 
-      if (!refreshToken) {
-        forceLogout();
-        return Promise.reject(error);
-      }
-
-      try {
-        const res = await api.post("/auth/refresh", {
-          refresh_token: refreshToken,
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            resolve(api(originalRequest));
+          });
         });
-
-        const newAccessToken = res.data.access_token;
-        setToken(newAccessToken);
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        showErrorToast(i18n.t("sessionExpired"));
-        forceLogout();
-        return Promise.reject(refreshError);
       }
+
+      isRefreshing = true;
+
+      const newToken = await refreshAccessToken();
+
+      isRefreshing = false;
+
+      if (newToken) {
+        onRefreshed(newToken);
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return api(originalRequest);
+      }
+
+      showErrorToast(i18n.t("sessionExpired"));
+      forceLogout();
     }
 
     return Promise.reject(error);

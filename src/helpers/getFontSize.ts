@@ -2,7 +2,7 @@ import useAuthStore from "../hooks/useAuthStore";
 
 const scaleFontSize = {
   small: 0.825,
-  default: 1,
+  medium: 1,
   large: 1.175,
 };
 

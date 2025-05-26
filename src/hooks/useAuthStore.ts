@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AxiosError } from "axios";
-import uuid from "react-native-uuid";
 import { create } from "zustand";
 import {
   confirmResetPassword,
@@ -11,6 +10,7 @@ import {
 } from "../api/auth";
 import { forceLogout } from "../api/forceLogout";
 import { setRefresh, setToken } from "../api/token";
+import { getUserInfo } from "../api/user";
 import { EErrors } from "../constants/errors";
 import { emailPattern, innPattern } from "../constants/patterns";
 import { showErrorToast, showSuccessToast } from "../helpers/toast";
@@ -23,26 +23,22 @@ import {
   IUser,
   TLanguage,
 } from "../model/user";
+import convertUserInfo from "../utils/convertUserInfo";
 
 interface IUseAuthStore extends IStoreStatus {
   user: IUser;
+  errors: IErrors;
+  language: TLanguage;
+  fetchUserInfo: () => Promise<void>;
+  setLanguage: (lang: TLanguage) => void;
   setUserField: (field: keyof IUser, value: string) => void;
   setUser: (newUser: IUser) => void;
   clearUser: () => void;
-  errors: IErrors;
   setErrorsField: (field: keyof IErrors, error: string) => void;
   clearErrors: () => void;
-  register: (
-    code: string,
-    agreement: boolean,
-    addAccount: (account: IUser) => void
-  ) => void;
   validate: (code: string, agreement: boolean) => boolean;
-  login: (
-    email: string,
-    password: string,
-    addAccount: (account: IUser) => void
-  ) => void;
+  login: (login: string, password: string) => Promise<void>;
+  register: (code: string, agreement: boolean) => Promise<void>;
   logout: (clearAccounts: () => void) => void;
   sendRegisterCode: (email: string) => void;
   sendResetCode: (email: string) => void;
@@ -52,8 +48,6 @@ interface IUseAuthStore extends IStoreStatus {
     password: string,
     navigate: any
   ) => void;
-  language: TLanguage;
-  setLanguage: (lang: TLanguage) => void;
 }
 
 const useAuthStore = create<IUseAuthStore>((set, get) => ({
@@ -63,20 +57,34 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
   user: { ...initialUser },
   language: "ru",
 
-  clearUser: () => set({ user: { ...initialUser } }),
+  fetchUserInfo: async () => {
+    try {
+      set({ loading: true, error: null });
+      const res = await getUserInfo();
+      set({
+        user: convertUserInfo(res.data),
+        loading: false,
+        error: false,
+      });
+    } catch (error) {
+      console.log(error);
+      forceLogout();
+      set({ error, loading: false });
+    }
+  },
+
+  setUserField: (field, value) =>
+    set((state) => {
+      const updatedUser = { ...state.user, [field]: value };
+      return { user: updatedUser };
+    }),
 
   setUser: (newUser) => {
     set({ user: { ...newUser } });
   },
 
-  setUserField: (field, value) =>
-    set((state) => ({
-      user: { ...state.user, [field]: value },
-    })),
-
-  logout: (clearAccounts) => {
-    forceLogout();
-    clearAccounts();
+  clearUser: () => {
+    set({ user: { ...initialUser } });
   },
 
   setErrorsField: (field, error) =>
@@ -113,46 +121,35 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
     return Object.values(newErrors).every((error) => !error);
   },
 
-  register: async (code, agreement, addAccount) => {
-    const { user, validate } = get();
+  register: async (code, agreement) => {
+    const { user, validate, fetchUserInfo } = get();
 
     if (!validate(code, agreement)) {
       showErrorToast(i18n.t(EErrors.fields));
       return;
     }
 
-    set({ loading: true, error: null });
-
     try {
-      const newUser: IUser = {
-        id: uuid.v4(),
+      const response = await registerRequest({
         login: user.login.trim(),
         password: user.password.trim(),
-        inn: user.inn?.trim(),
-        role: user.role,
-        theme: "dark",
-        fontSize: "default",
-      };
-
-      const response = await registerRequest({
-        email: newUser.login,
-        password: newUser.password,
-        tin: newUser.inn || "",
+        tin: user.inn?.trim() || "",
         type: "legal person",
         code: code.trim(),
       });
 
       if (response.status === 201) {
-        const loginData = await loginRequest(newUser.login, newUser.password);
+        const loginData = await loginRequest(
+          user.login.trim(),
+          user.password.trim()
+        );
         const { access_token, refresh_token } = loginData.data;
 
-        await setToken(access_token);
-        await setRefresh(refresh_token);
-        await AsyncStorage.setItem("user", JSON.stringify(newUser));
-        set({ user: newUser });
-        addAccount(newUser);
+        setToken(access_token);
+        setRefresh(refresh_token);
 
-        showSuccessToast(i18n.t("registrationSuccess"), 2000);
+        await fetchUserInfo();
+        showSuccessToast(i18n.t("registrationSuccess"));
       } else {
         showErrorToast(i18n.t("registrationFailed"));
       }
@@ -171,37 +168,20 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       } else {
         showErrorToast(i18n.t("unknownError"));
       }
-      set({ error });
-    } finally {
-      set({ loading: false });
     }
   },
 
-  login: async (email, password, addAccount) => {
-    set({ loading: true, error: null });
-
+  login: async (login, password) => {
     try {
-      const newUser: IUser = {
-        id: uuid.v4(),
-        login: email,
-        password: password,
-        inn: "1111111111",
-        role: "owner",
-        theme: "dark",
-        fontSize: "default",
-        subscription: "2",
-      };
-
-      const data = await loginRequest(email, password);
+      const { fetchUserInfo } = get();
+      const data = await loginRequest(login, password);
       const { access_token, refresh_token } = data.data;
 
       setToken(access_token);
       setRefresh(refresh_token);
 
-      await AsyncStorage.setItem("user", JSON.stringify(newUser));
-      set({ user: newUser });
-      addAccount(newUser);
-      showSuccessToast(i18n.t("loginSuccess"), 2000);
+      await fetchUserInfo();
+      showSuccessToast(i18n.t("loginSuccess"));
     } catch (error) {
       console.log(error);
       if (error instanceof AxiosError) {
@@ -217,16 +197,12 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       } else {
         showErrorToast(i18n.t("unknownError"));
       }
-      set({ error });
-    } finally {
-      set({ loading: false });
     }
   },
 
   sendRegisterCode: async (email) => {
     if (email) {
       try {
-        set({ loading: true, error: null });
         await sendCode({ email });
         showSuccessToast(i18n.t("codeSentToEmail"));
       } catch (error) {
@@ -244,9 +220,6 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
         } else {
           showErrorToast(i18n.t("unknownError"));
         }
-        set({ error });
-      } finally {
-        set({ loading: false });
       }
     } else {
       showErrorToast(i18n.t("enterEmailFirst"));
@@ -256,7 +229,6 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
   sendResetCode: async (email) => {
     if (email) {
       try {
-        set({ loading: true, error: null });
         await resetPassword({ email });
         showSuccessToast(i18n.t("codeSentToEmail"));
       } catch (error) {
@@ -274,9 +246,6 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
         } else {
           showErrorToast(i18n.t("unknownError"));
         }
-        set({ error });
-      } finally {
-        set({ loading: false });
       }
     } else {
       showErrorToast(i18n.t("enterEmailFirst"));
@@ -285,7 +254,6 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
 
   restorePassword: async (email, code, password, navigate) => {
     try {
-      set({ loading: true, error: null });
       await confirmResetPassword({ email, code, new_password: password });
       navigate("Login", { direction: "backward" });
       showSuccessToast(i18n.t("passwordChanged"), 5000);
@@ -304,9 +272,6 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
       } else {
         showErrorToast(i18n.t("unknownError"));
       }
-      set({ error });
-    } finally {
-      set({ loading: false });
     }
   },
 
@@ -314,6 +279,11 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
     i18n.changeLanguage(lang);
     AsyncStorage.setItem("language", lang);
     set({ language: lang });
+  },
+
+  logout: (clearAccounts) => {
+    forceLogout();
+    clearAccounts();
   },
 }));
 

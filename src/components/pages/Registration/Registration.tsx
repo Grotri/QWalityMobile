@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Keyboard, Pressable, Text, View } from "react-native";
 import { CheckIcon } from "../../../../assets/icons";
-import useAccountStore from "../../../hooks/useAccountStore";
 import useAuthStore from "../../../hooks/useAuthStore";
 import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
 import Button from "../../atoms/Button";
@@ -24,7 +23,6 @@ const Registration = () => {
     register,
     sendRegisterCode,
   } = useAuthStore();
-  const { addAccount } = useAccountStore();
 
   const [code, setCode] = useState<string>("");
   const [isChecked, setIsChecked] = useState<boolean>(false);
@@ -105,7 +103,7 @@ const Registration = () => {
           style={styles.createBtn}
           onPress={() => {
             Keyboard.dismiss();
-            register(code, isChecked, addAccount);
+            register(code, isChecked);
           }}
         >
           <Text style={styles.createBtnText}>{t("registerAccount")}</Text>
