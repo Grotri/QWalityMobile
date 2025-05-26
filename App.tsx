@@ -101,7 +101,7 @@ const App = () => {
     const checkTokenAndFetchUser = async () => {
       const token = await getToken();
       if (token) {
-        fetchUserInfo();
+        fetchUserInfo(true);
       }
     };
 
