@@ -1,8 +1,9 @@
-import uuid from "react-native-uuid";
 import { create } from "zustand";
-import { initialCameras } from "../constants/cameras";
+import { createCamera, getCameras } from "../api/camera";
+import { getDefects } from "../api/defects";
 import { EErrors } from "../constants/errors";
 import { linkPattern } from "../constants/patterns";
+import { convertISODate, parseCustomDate } from "../helpers/formatDate";
 import {
   showErrorToast,
   showInfoToast,
@@ -11,6 +12,9 @@ import {
 import i18n from "../i18n";
 import { ICamera } from "../model/camera";
 import { IStoreStatus } from "../model/misc";
+import convertCamera from "../utils/convertCamera";
+import convertCameras from "../utils/convertCameras";
+import convertDefects, { DefectNode } from "../utils/convertDefects";
 
 interface IErrors {
   name: string;
@@ -25,9 +29,12 @@ const initialErrors: IErrors = {
 interface IUseCamerasStore extends IStoreStatus {
   cameras: ICamera[];
   errors: IErrors;
+  activeSections: number[];
+  setActiveSections: (sections: number[]) => void;
   setErrorsField: (field: keyof IErrors, error: string) => void;
   refreshErrors: () => void;
   fetchCameras: () => void;
+  fetchDefects: () => void;
   validate: (name: string, link: string) => boolean;
   addCamera: (name: string, link: string) => void;
   editCamera: (camera: ICamera, onEdit: (camera: null) => void) => void;
@@ -43,15 +50,17 @@ interface IUseCamerasStore extends IStoreStatus {
 const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
   loading: false,
   error: null,
-  cameras: [...initialCameras],
+  activeSections: [],
+  cameras: [],
   errors: { ...initialErrors },
 
-  fetchCameras: () => {
+  fetchCameras: async () => {
     try {
       set({ loading: true, error: null });
-      const cameras = [...initialCameras];
+      const resCameras = await getCameras();
+      const resDefects = await getDefects();
       set({
-        cameras,
+        cameras: convertCameras(resCameras.data, resDefects.data),
         loading: false,
         error: false,
       });
@@ -61,6 +70,33 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
       set({ error, loading: false });
     }
   },
+
+  fetchDefects: async () => {
+    try {
+      const resDefects = await getDefects();
+      set((state) => ({
+        cameras: state.cameras.map((camera) => {
+          const defectNode = resDefects.data.find(
+            (def: DefectNode) => def.camera_id.toString() === camera.id
+          );
+          return {
+            ...camera,
+            defects: defectNode ? convertDefects(defectNode) : camera.defects,
+            uptime:
+              defectNode && defectNode.defects.length > 0
+                ? defectNode.defects[0].uptime
+                : camera.uptime,
+          };
+        }),
+        error: false,
+      }));
+    } catch (error) {
+      console.error(error);
+      set({ error });
+    }
+  },
+
+  setActiveSections: (sections) => set({ activeSections: sections }),
 
   setErrorsField: (field, error) =>
     set((state) => ({ errors: { ...state.errors, [field]: error } })),
@@ -79,39 +115,34 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     return Object.values(newErrors).every((error) => !error);
   },
 
-  addCamera: (name, link) => {
+  addCamera: async (name, link) => {
     const { validate, cameras } = get();
 
     if (validate(name, link)) {
-      const newCamera: ICamera = {
-        id: uuid.v4(),
-        online: true,
-        title: name.trim(),
-        uptime: i18n.t("zeroTime"),
-        defects: [],
-        link: link.trim(),
-      };
-
       try {
+        set({ error: null });
+        const request = await createCamera({
+          name: name.trim(),
+          camera_url: link.trim(),
+        });
         set({
-          loading: true,
-          cameras: [...cameras, newCamera],
+          cameras: [...cameras, convertCamera(request.data, link.trim())],
+          error: false,
         });
         showSuccessToast(
           `${i18n.t("camera")} "${name}" ${i18n.t("cameraAddedSuccessfully")}`
         );
       } catch (error) {
-        console.log(error);
         showErrorToast(i18n.t("cameraAddError"));
-      } finally {
-        set({ loading: false });
+        console.log(error);
+        set({ error });
       }
     } else {
       showErrorToast(i18n.t(EErrors.fields));
     }
   },
 
-  editCamera: (camera, onEdit) => {
+  editCamera: async (camera, onEdit) => {
     const { validate, cameras } = get();
     const oldCamera = cameras.find((c) => c.id === camera.id);
     const newCamera: ICamera = {
@@ -123,19 +154,25 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     if (JSON.stringify(oldCamera) !== JSON.stringify(newCamera)) {
       if (validate(newCamera.title, newCamera.link)) {
         try {
+          set({ loading: true, error: null });
+          // await changeCamera(newCamera.id, {
+          //   name: newCamera.title,
+          //   camera_url: newCamera.link,
+          //   status: newCamera.online ? "active" : "non-active",
+          // });
           set({
-            loading: true,
             cameras: cameras.map((c) =>
               c.id === newCamera.id ? newCamera : c
             ),
+            loading: false,
+            error: false,
           });
           onEdit(null);
           showSuccessToast(i18n.t("cameraDataEditedSuccessfully"));
         } catch (error) {
-          console.log(error);
           showErrorToast(i18n.t("cameraEditError"));
-        } finally {
-          set({ loading: false });
+          console.log(error);
+          set({ loading: false, error });
         }
       } else {
         showErrorToast(i18n.t(EErrors.fields));
@@ -147,10 +184,11 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
 
   deleteCamera: (camera) => {
     const { cameras } = get();
-    const now = new Date().toISOString();
+    const now = convertISODate(new Date().toISOString());
 
     try {
       set({ loading: true, error: null });
+      // TODO: поле "deleted" не забыть отправить на бэк
       set({
         cameras: cameras.map((c) =>
           c.id === camera.id ? { ...c, deletedAt: now } : c
@@ -203,7 +241,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
 
   deleteDefect: (cameraId, defectId) => {
     const { cameras } = get();
-    const now = new Date().toISOString();
+    const now = convertISODate(new Date().toISOString());
 
     try {
       set({ loading: true, error: null });
@@ -304,8 +342,10 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         defects: camera.defects.filter((defect) => {
           if (!defect.deletedAt) return true;
 
-          const defectDate = new Date(defect.date);
-          const shouldDelete = defectDate >= start && defectDate <= end;
+          const defectTimestamp = parseCustomDate(defect.deletedAt);
+          const shouldDelete =
+            defectTimestamp >= start.getTime() &&
+            defectTimestamp <= end.getTime();
 
           if (shouldDelete) {
             foundSomething = true;

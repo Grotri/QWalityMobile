@@ -52,5 +52,12 @@ export const getStyles = () => {
       fontFamily: fonts.semibold,
       color: palette.sectionTransparentText,
     },
+    errorText: {
+      marginTop: 28,
+      fontSize: getFontSize(16),
+      lineHeight: getLineHeight(21),
+      fontFamily: fonts.semibold,
+      color: palette.error,
+    },
   });
 };

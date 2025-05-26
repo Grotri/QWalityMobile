@@ -14,6 +14,7 @@ import useCamerasStore from "../../../hooks/useCamerasStore";
 import { usePalette } from "../../../hooks/usePalette";
 import IconRotated from "../../atoms/IconRotated";
 import Input from "../../atoms/Input";
+import Loader from "../../atoms/Loader/Loader";
 import BottomFixIcon from "../../molecules/BottomFixIcon";
 import AddCameraModal from "../../organisms/AddCameraModal";
 import CameraAccordion from "../../organisms/CameraAccordion";
@@ -26,7 +27,7 @@ const Main = () => {
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
-  const { cameras: camerasInfo } = useCamerasStore();
+  const { cameras: camerasInfo, loading, error } = useCamerasStore();
   const cameraLimits = useCameraLimits();
   const [cameras, setCameras] = useState<ICamera[]>([]);
   const [activeSections, setActiveSections] = useState<number[]>([]);
@@ -68,8 +69,11 @@ const Main = () => {
 
   useEffect(() => {
     setCameras([...camerasInfo.filter((c) => !c.deletedAt)]);
-    setIsAddCameraModalOpen(false);
   }, [camerasInfo]);
+
+  useEffect(() => {
+    setIsAddCameraModalOpen(false);
+  }, [camerasInfo.length]);
 
   const renderHeader = (section: (typeof sections)[number], index: number) => (
     <View style={styles.header}>
@@ -159,7 +163,6 @@ const Main = () => {
               }
             }}
             marginRight={20}
-            marginBottom={28}
           />
         ) : null
       }
@@ -173,20 +176,26 @@ const Main = () => {
         !!selectedDefect
       }
     >
-      <View style={styles.wrapper}>
-        <Accordion
-          sections={sections}
-          activeSections={activeSections}
-          renderHeader={renderHeader}
-          renderContent={renderContent}
-          onChange={handleSectionChange}
-          touchableComponent={Pressable}
-        />
-      </View>
-      <AddCameraModal
-        isOpen={isAddCameraModalOpen}
-        setIsOpen={setIsAddCameraModalOpen}
-      />
+      {loading && <Loader />}
+      {!loading && error && <Text style={styles.errorText}>{error}</Text>}
+      {!loading && !error && (
+        <>
+          <View style={styles.wrapper}>
+            <Accordion
+              sections={sections}
+              activeSections={activeSections}
+              renderHeader={renderHeader}
+              renderContent={renderContent}
+              onChange={handleSectionChange}
+              touchableComponent={Pressable}
+            />
+          </View>
+          <AddCameraModal
+            isOpen={isAddCameraModalOpen}
+            setIsOpen={setIsAddCameraModalOpen}
+          />
+        </>
+      )}
     </PageTemplate>
   );
 };
