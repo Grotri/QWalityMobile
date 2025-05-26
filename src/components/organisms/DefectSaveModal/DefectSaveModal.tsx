@@ -1,7 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import { convertISODate } from "../../../helpers/formatDate";
 import { showSuccessToast } from "../../../helpers/toast";
 import { initialDefect } from "../../../model/defect";
 import Button from "../../atoms/Button";
@@ -28,7 +27,7 @@ const DefectSaveModal: FC<IDefectSaveModal> = ({ onClose, defect }) => {
         <View style={styles.mainInfo}>
           <Text style={styles.title}>{t("wantDownloadImage")}</Text>
           <Text style={styles.name}>
-            {t("defect")} ({t(name)}) {convertISODate(date)}
+            {t("defect")} ({t(name)}) {date}
           </Text>
         </View>
         <View style={styles.btns}>

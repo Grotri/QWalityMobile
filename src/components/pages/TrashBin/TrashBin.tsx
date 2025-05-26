@@ -1,3 +1,4 @@
+import { parseCustomDate } from "@/src/helpers/formatDate";
 import { showErrorToast } from "@/src/helpers/toast";
 import { useCameraLimits } from "@/src/helpers/useCameraLimits";
 import { ICamera } from "@/src/model/camera";
@@ -52,9 +53,9 @@ const TrashBin = () => {
     .map((camera) => ({ type: "camera", data: camera, cameraId: camera.id }));
 
   const trashItems = [...deletedCameras, ...deletedDefects].sort((a, b) => {
-    const dateA = new Date(a.data.deletedAt ?? 0).getTime();
-    const dateB = new Date(b.data.deletedAt ?? 0).getTime();
-    return dateB - dateA;
+    const timeA = a.data.deletedAt ? parseCustomDate(a.data.deletedAt) : 0;
+    const timeB = b.data.deletedAt ? parseCustomDate(b.data.deletedAt) : 0;
+    return timeB - timeA;
   });
 
   useEffect(() => {
@@ -84,7 +85,6 @@ const TrashBin = () => {
             onPress={() => setIsModalOpen(true)}
             gap={2}
             marginRight={24}
-            marginBottom={28}
           />
         ) : null
       }
@@ -99,6 +99,7 @@ const TrashBin = () => {
                   defect={item.data as IDefect}
                   textBtn={user.role !== "user" ? t("restore") : undefined}
                   onPress={() => recoverDefect(item.cameraId, item.data.id)}
+                  isInTrashBin
                 />
               );
             } else {

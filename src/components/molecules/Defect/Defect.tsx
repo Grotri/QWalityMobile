@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import { convertISODate } from "../../../helpers/formatDate";
 import Button from "../../atoms/Button";
 import { getStyles } from "./styles";
 import { IDefectItem } from "./types";
@@ -12,10 +11,11 @@ const Defect: FC<IDefectItem> = ({
   onPress,
   setSelectedDefect,
   pressableIcon = false,
+  isInTrashBin = false,
 }) => {
   const styles = getStyles();
   const { t } = useTranslation();
-  const { name, date } = defect;
+  const { name, date, deletedAt } = defect;
 
   const clickDefect = () => {
     if (setSelectedDefect) {
@@ -37,7 +37,9 @@ const Defect: FC<IDefectItem> = ({
         )}
         <View>
           <Text style={styles.itemName}>{t(name)}</Text>
-          <Text style={styles.itemDate}>{convertISODate(date)}</Text>
+          <Text style={styles.itemDate}>
+            {isInTrashBin && deletedAt ? deletedAt : date}
+          </Text>
         </View>
       </View>
       {textBtn && (
