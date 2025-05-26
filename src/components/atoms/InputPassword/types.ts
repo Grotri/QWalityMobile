@@ -5,7 +5,7 @@ export interface IInputPassword {
   label?: string;
   customStyles?: StyleProp<ViewStyle>;
   customInputWrapperStyles?: StyleProp<ViewStyle>;
-  customInputStyles?: StyleProp<ViewStyle>;
+  customInputStyles?: StyleProp<TextStyle>;
   customLabelStyles?: StyleProp<TextStyle>;
   errorStyles?: StyleProp<TextStyle>;
   onChangeText?: (text: string) => void;
@@ -13,4 +13,5 @@ export interface IInputPassword {
   errorText?: string;
   iconColor?: string;
   iconSize?: number;
+  placeholder?: string;
 }

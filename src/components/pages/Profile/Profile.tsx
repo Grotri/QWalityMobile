@@ -18,6 +18,7 @@ import { useMainNavigation } from "../../../hooks/useTypedNavigation";
 import { initialUser, IUser } from "../../../model/user";
 import Button from "../../atoms/Button";
 import Input from "../../atoms/Input";
+import Loader from "../../atoms/Loader/Loader";
 import PageTemplate from "../../templates/PageTemplate";
 import { getStyles } from "./styles";
 import { IErrors, initialErrors } from "./types";
@@ -32,6 +33,7 @@ const Profile = () => {
   const [errors, setErrors] = useState<IErrors>({ ...initialErrors });
   const [code, setCode] = useState<string>("");
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const cancel = () => {
     setIsEditMode(false);
@@ -80,7 +82,11 @@ const Profile = () => {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     setUserInfo({ ...user });
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
   }, [user]);
 
   return (
@@ -89,129 +95,138 @@ const Profile = () => {
       headerText={t("profile")}
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
     >
-      <View style={styles.profileWrapper}>
-        <ProfileIcon />
-        <View style={styles.card}>
-          <View>
-            <Text style={styles.cardPointTitle}>{t("emailOrLoginChange")}</Text>
-            {!isEditMode ? (
-              <Text style={styles.cardPointData}>{userInfo.login}</Text>
-            ) : (
-              <Input
-                value={userInfo.login}
-                onChangeText={(email) => {
-                  setUserInfo({ ...userInfo, login: email });
-                  setErrors({ ...errors, login: "" });
-                }}
-                customInputStyles={styles.input}
-                inputMode="email"
-                maxLength={254}
-                cursorColor={palette.subTextMainScreenPopup}
-                errorText={errors.login}
-              />
-            )}
-          </View>
-          <View>
-            <Text style={styles.cardPointTitle}>{t("role")}</Text>
-            <Text style={styles.cardPointData}>
-              {t(ERoles[user.role as keyof typeof ERoles])}
-            </Text>
-          </View>
-          {user.role === "owner" && (
+      {(isLoading || !userInfo.id) && <Loader />}
+      {!isLoading && userInfo.id && (
+        <View style={styles.profileWrapper}>
+          <ProfileIcon />
+          <View style={styles.card}>
             <View>
-              <Text style={styles.cardPointTitle}>{t("inn")}</Text>
+              <Text style={styles.cardPointTitle}>
+                {t("emailOrLoginChange")}
+              </Text>
               {!isEditMode ? (
-                <Text style={styles.cardPointData}>{userInfo.inn}</Text>
+                <Text style={styles.cardPointData}>{userInfo.login}</Text>
               ) : (
                 <Input
-                  value={userInfo.inn || ""}
-                  onChangeText={(inn) => {
-                    setUserInfo({ ...userInfo, inn });
-                    setErrors({ ...errors, inn: "" });
+                  value={userInfo.login}
+                  onChangeText={(email) => {
+                    setUserInfo({ ...userInfo, login: email });
+                    setErrors({ ...errors, login: "" });
                   }}
-                  maxLength={12}
-                  inputMode="numeric"
-                  keyboardType="numeric"
                   customInputStyles={styles.input}
+                  inputMode="email"
+                  maxLength={254}
                   cursorColor={palette.subTextMainScreenPopup}
-                  errorText={errors.inn}
+                  errorText={errors.login}
                 />
               )}
             </View>
+            <View>
+              <Text style={styles.cardPointTitle}>{t("role")}</Text>
+              <Text style={styles.cardPointData}>
+                {t(ERoles[user.role as keyof typeof ERoles])}
+              </Text>
+            </View>
+            {user.role === "owner" && (
+              <View>
+                <Text style={styles.cardPointTitle}>{t("inn")}</Text>
+                {!isEditMode ? (
+                  <Text style={styles.cardPointData}>{userInfo.inn}</Text>
+                ) : (
+                  <Input
+                    value={userInfo.inn || ""}
+                    onChangeText={(inn) => {
+                      setUserInfo({ ...userInfo, inn });
+                      setErrors({ ...errors, inn: "" });
+                    }}
+                    maxLength={12}
+                    inputMode="numeric"
+                    keyboardType="numeric"
+                    customInputStyles={styles.input}
+                    cursorColor={palette.subTextMainScreenPopup}
+                    errorText={errors.inn}
+                  />
+                )}
+              </View>
+            )}
+          </View>
+          {!isEditMode ? (
+            <>
+              {user.role === "owner" && (
+                <Button
+                  style={[styles.btn, { marginTop: 13 }]}
+                  color="blue"
+                  onPress={() => setIsEditMode(true)}
+                >
+                  <Text style={styles.btnText}>{t("editData")}</Text>
+                </Button>
+              )}
+              {user.role === "owner" && (
+                <Button
+                  style={styles.btn}
+                  color="blue"
+                  onPress={() => navigate("SubscriptionChange")}
+                >
+                  <Text style={styles.btnText}>{t("manageSubscription")}</Text>
+                </Button>
+              )}
+              {["owner", "admin"].includes(user.role) && (
+                <Button
+                  style={styles.btn}
+                  color="blue"
+                  onPress={() => navigate("Admin")}
+                >
+                  <Text style={styles.btnText}>{t("adminPanel")}</Text>
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              <View style={styles.confirmationWrapper}>
+                <Input
+                  label={t("confirmationCode")}
+                  value={code}
+                  onChangeText={(code) => {
+                    setCode(code);
+                    setErrors({ ...errors, code: "" });
+                  }}
+                  inputMode="numeric"
+                  keyboardType="numeric"
+                  maxLength={6}
+                  cursorColor={palette.subTextMainScreenPopup}
+                  customStyles={styles.confirmationInputWrapper}
+                  customInputStyles={styles.confirmationInput}
+                  customLabelStyles={styles.confirmationInputLabel}
+                  errorText={errors.code}
+                />
+                <Button
+                  style={styles.codeBtn}
+                  color="darkBlue"
+                  onPress={() => showInfoToast(t("unavailableCode"))}
+                >
+                  <Text style={styles.codeBtnText}>{t("sendCode")}</Text>
+                </Button>
+              </View>
+              <Button style={styles.btn} color="blue" onPress={saveChanges}>
+                <Text style={styles.btnText}>{t("saveChanges")}</Text>
+              </Button>
+              <Button style={styles.btn} color="blue" onPress={cancel}>
+                <Text style={styles.btnText}>{t("cancelAction")}</Text>
+              </Button>
+              <View style={styles.supportTextWrapper}>
+                <Text style={styles.supportText}>{t("noAccessToEmail")}</Text>
+                <Button onPress={() => Linking.openURL(supportLink)}>
+                  <Text
+                    style={[styles.supportText, styles.supportTextUnderlined]}
+                  >
+                    {t("contactTechSupport")}
+                  </Text>
+                </Button>
+              </View>
+            </>
           )}
         </View>
-        {!isEditMode ? (
-          <>
-            {user.role === "owner" && (
-              <Button
-                style={[styles.btn, { marginTop: 13 }]}
-                color="blue"
-                onPress={() => setIsEditMode(true)}
-              >
-                <Text style={styles.btnText}>{t("editData")}</Text>
-              </Button>
-            )}
-            {user.role === "owner" && (
-              <Button
-                style={styles.btn}
-                color="blue"
-                onPress={() => navigate("SubscriptionChange")}
-              >
-                <Text style={styles.btnText}>{t("manageSubscription")}</Text>
-              </Button>
-            )}
-            {["owner", "administrator"].includes(user.role) && (
-              <Button
-                style={styles.btn}
-                color="blue"
-                onPress={() => navigate("Admin")}
-              >
-                <Text style={styles.btnText}>{t("adminPanel")}</Text>
-              </Button>
-            )}
-          </>
-        ) : (
-          <>
-            <View style={styles.confirmationWrapper}>
-              <Input
-                label={t("confirmationCode")}
-                value={code}
-                onChangeText={(code) => {
-                  setCode(code);
-                  setErrors({ ...errors, code: "" });
-                }}
-                inputMode="numeric"
-                keyboardType="numeric"
-                maxLength={6}
-                cursorColor={palette.subTextMainScreenPopup}
-                customStyles={styles.confirmationInputWrapper}
-                customInputStyles={styles.confirmationInput}
-                customLabelStyles={styles.confirmationInputLabel}
-                errorText={errors.code}
-              />
-              <Button style={styles.codeBtn} color="darkBlue">
-                <Text style={styles.codeBtnText}>{t("sendCode")}</Text>
-              </Button>
-            </View>
-            <Button style={styles.btn} color="blue" onPress={saveChanges}>
-              <Text style={styles.btnText}>{t("saveChanges")}</Text>
-            </Button>
-            <Button style={styles.btn} color="blue" onPress={cancel}>
-              <Text style={styles.btnText}>{t("cancelAction")}</Text>
-            </Button>
-            <View style={styles.supportTextWrapper}>
-              <Text style={styles.supportText}>{t("noAccessToEmail")}</Text>
-              <Button onPress={() => Linking.openURL(supportLink)}>
-                <Text
-                  style={[styles.supportText, styles.supportTextUnderlined]}
-                >
-                  {t("contactTechSupport")}
-                </Text>
-              </Button>
-            </View>
-          </>
-        )}
-      </View>
+      )}
     </PageTemplate>
   );
 };

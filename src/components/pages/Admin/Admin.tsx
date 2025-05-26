@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import uuid from "react-native-uuid";
 import { ArrowBottomIcon } from "../../../../assets/icons";
 import { EErrors } from "../../../constants/errors";
 import { ERoles } from "../../../constants/roles";
@@ -12,7 +11,6 @@ import { useAvailableRoles } from "../../../helpers/useAvailableRoles";
 import useAccountStore from "../../../hooks/useAccountStore";
 import { usePalette } from "../../../hooks/usePalette";
 import { useMainNavigation } from "../../../hooks/useTypedNavigation";
-import { IUser } from "../../../model/user";
 import Button from "../../atoms/Button";
 import Dropdown from "../../atoms/Dropdown";
 import Input from "../../atoms/Input";
@@ -59,16 +57,8 @@ const Admin = () => {
 
   const createSubAccount = () => {
     if (accounts.length < accountLimits) {
-      const account: IUser = {
-        id: uuid.v4(),
-        login: login.trim(),
-        password: password.trim(),
-        role,
-        theme: "dark",
-        fontSize: "default",
-      };
       if (validate()) {
-        registerAccount(account);
+        registerAccount(login.trim(), password.trim(), role);
         setLogin("");
         setPassword("");
       } else {

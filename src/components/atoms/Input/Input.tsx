@@ -1,6 +1,5 @@
-import * as NavigationBar from "expo-navigation-bar";
 import React, { FC } from "react";
-import { Platform, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { usePalette } from "../../../hooks/usePalette";
 import { getStyles } from "./styles";
 import { IInput } from "./types";
@@ -28,7 +27,7 @@ const Input: FC<IInput> = ({
 }) => {
   const styles = getStyles();
   const palette = usePalette();
-
+  
   return (
     <View style={[styles.container, customStyles]}>
       {label && <Text style={[styles.label, customLabelStyles]}>{label}</Text>}
@@ -51,11 +50,6 @@ const Input: FC<IInput> = ({
           maxLength={maxLength}
           cursorColor={cursorColor || palette.black}
           secureTextEntry={secureTextEntry}
-          onKeyPress={() => {
-            if (Platform.OS === "android") {
-              NavigationBar.setVisibilityAsync("hidden");
-            }
-          }}
         />
         {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
       </View>
