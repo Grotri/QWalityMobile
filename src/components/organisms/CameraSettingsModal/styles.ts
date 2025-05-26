@@ -1,10 +1,12 @@
 import { getFontSize, getLineHeight } from "@/src/helpers/getFontSize";
+import useAuthStore from "@/src/hooks/useAuthStore";
 import { usePalette } from "@/src/hooks/usePalette";
 import { StyleSheet } from "react-native";
 import { fonts } from "../../../constants/fonts";
 
 export const getStyles = () => {
   const palette = usePalette();
+  const { language } = useAuthStore();
 
   return StyleSheet.create({
     modals: {
@@ -79,13 +81,14 @@ export const getStyles = () => {
     },
     flexBtns: {
       width: "100%",
-      flexDirection: "row",
+      flexDirection: language === "fr" ? "column" : "row",
       alignItems: "center",
       gap: 16,
       marginTop: 4,
     },
     btn: {
-      flex: 1,
+      flex: language === "fr" ? 0 : 1,
+      width: language === "fr" ? "100%" : "auto",
       borderRadius: 8,
       height: 27,
     },
