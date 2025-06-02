@@ -3,6 +3,7 @@ export interface IDefect {
   name: string;
   date: string;
   deletedAt?: string;
+  photo?: string;
 }
 
 export interface ICamera {
@@ -13,4 +14,5 @@ export interface ICamera {
   defects: IDefect[];
   link: string;
   deletedAt?: string;
+  maxDefects: number;
 }
