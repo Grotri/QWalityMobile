@@ -102,5 +102,13 @@ export const getStyles = () => {
     supportTextUnderlined: {
       textDecorationLine: "underline",
     },
+    errorText: {
+      marginTop: 28,
+      fontSize: getFontSize(16),
+      lineHeight: getLineHeight(21),
+      fontFamily: fonts.semibold,
+      color: palette.error,
+      alignSelf: "center",
+    },
   });
 };

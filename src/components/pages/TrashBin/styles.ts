@@ -68,11 +68,19 @@ export const getStyles = () => {
       color: palette.supportTransparentText,
     },
     noDefects: {
-      marginTop: 20,
+      marginTop: 28,
       fontSize: getFontSize(16),
-      lineHeight: getLineHeight(16),
+      lineHeight: getLineHeight(21),
       fontFamily: fonts.semibold,
       color: palette.sectionTransparentText,
+      alignSelf: "center",
+    },
+    errorText: {
+      marginTop: 28,
+      fontSize: getFontSize(16),
+      lineHeight: getLineHeight(21),
+      fontFamily: fonts.semibold,
+      color: palette.error,
       alignSelf: "center",
     },
   });

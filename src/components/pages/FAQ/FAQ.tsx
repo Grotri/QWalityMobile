@@ -20,7 +20,7 @@ const FAQ = () => {
   const [activeSections, setActiveSections] = useState<number[]>([]);
 
   const handleSectionChange = (sections: number[]) => {
-    setActiveSections(sections);
+    setTimeout(() => setActiveSections(sections), 0);
   };
 
   const renderHeader = (question: IQuestionSection, index: number) => (

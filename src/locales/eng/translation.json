@@ -257,5 +257,6 @@
     "day": "d",
     "hour": "h",
     "minute": "m",
-    "unavailableCode": "Sending the code is temporarily unavailable"
+    "unavailableCode": "Sending the code is temporarily unavailable",
+    "errorOccurred": "An error has occurred"
 }

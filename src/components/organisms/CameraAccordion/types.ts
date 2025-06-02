@@ -12,4 +12,5 @@ export interface ICameraAccordion {
   setIsFilterCameraModalOpen: (isOpen: boolean) => void;
   selectedDefect: IDefect | null;
   setSelectedDefect: (defect: IDefect | null) => void;
+  isOnline: boolean;
 }

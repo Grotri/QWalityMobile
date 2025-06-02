@@ -8,7 +8,7 @@ import {
   resetPassword,
   sendCode,
 } from "../api/auth";
-import { forceLogout } from "../api/forceLogout";
+import { forceLogout, initForceLogout } from "../api/forceLogout";
 import { setRefresh, setToken } from "../api/token";
 import { getUserInfo } from "../api/user";
 import { EErrors } from "../constants/errors";
@@ -50,161 +50,142 @@ interface IUseAuthStore extends IStoreStatus {
   ) => void;
 }
 
-const useAuthStore = create<IUseAuthStore>((set, get) => ({
-  loading: false,
-  error: null,
-  errors: { ...initialErrors },
-  user: { ...initialUser },
-  language: "ru",
+const useAuthStore = create<IUseAuthStore>((set, get) => {
+  const clearUser = () => set({ user: { ...initialUser } });
+  initForceLogout(clearUser);
 
-  fetchUserInfo: async (isWithTestSubs) => {
-    try {
-      set({ loading: true, error: null });
-      const res = await getUserInfo();
-      set({
-        user: convertUserInfo(res.data, isWithTestSubs),
-        loading: false,
-        error: false,
-      });
-    } catch (error) {
-      console.log(error);
-      forceLogout();
-      set({ error, loading: false });
-    }
-  },
+  return {
+    loading: false,
+    error: null,
+    errors: { ...initialErrors },
+    user: { ...initialUser },
+    language: "ru",
 
-  setUserField: (field, value) =>
-    set((state) => {
-      const updatedUser = { ...state.user, [field]: value };
-      return { user: updatedUser };
-    }),
+    fetchUserInfo: async (isWithTestSubs) => {
+      try {
+        set({ loading: true, error: null });
+        const res = await getUserInfo();
+        set({
+          user: convertUserInfo(res.data, isWithTestSubs),
+          loading: false,
+          error: false,
+        });
+      } catch (error) {
+        console.log(error);
+        forceLogout();
+        set({ error, loading: false });
+      }
+    },
 
-  setUser: (newUser) => {
-    set({ user: { ...newUser } });
-  },
+    setUserField: (field, value) =>
+      set((state) => {
+        const updatedUser = { ...state.user, [field]: value };
+        return { user: updatedUser };
+      }),
 
-  clearUser: () => {
-    set({ user: { ...initialUser } });
-  },
+    setUser: (newUser) => {
+      set({ user: { ...newUser } });
+    },
 
-  setErrorsField: (field, error) =>
-    set((state) => ({ errors: { ...state.errors, [field]: error } })),
+    clearUser: () => {
+      set({ user: { ...initialUser } });
+    },
 
-  clearErrors: () => set({ errors: { ...initialErrors } }),
+    setErrorsField: (field, error) =>
+      set((state) => ({ errors: { ...state.errors, [field]: error } })),
 
-  validate: (code, agreement) => {
-    const { user } = get();
-    const { inn, login, password } = user;
+    clearErrors: () => set({ errors: { ...initialErrors } }),
 
-    const newErrors: IErrors = {
-      inn:
-        !inn || !inn.trim()
+    validate: (code, agreement) => {
+      const { user } = get();
+      const { inn, login, password } = user;
+
+      const newErrors: IErrors = {
+        inn:
+          !inn || !inn.trim()
+            ? i18n.t(EErrors.required)
+            : !innPattern.test(inn.trim())
+            ? i18n.t(EErrors.inn)
+            : "",
+        login: !login.trim()
           ? i18n.t(EErrors.required)
-          : !innPattern.test(inn.trim())
-          ? i18n.t(EErrors.inn)
+          : !emailPattern.test(login.trim())
+          ? i18n.t(EErrors.email)
           : "",
-      login: !login.trim()
-        ? i18n.t(EErrors.required)
-        : !emailPattern.test(login.trim())
-        ? i18n.t(EErrors.email)
-        : "",
-      code: !code.trim() ? i18n.t(EErrors.required) : "",
-      password: !password.trim()
-        ? i18n.t(EErrors.required)
-        : password.trim().length < 8
-        ? i18n.t(EErrors.password)
-        : "",
-      agreement: !agreement ? i18n.t(EErrors.required) : "",
-    };
+        code: !code.trim() ? i18n.t(EErrors.required) : "",
+        password: !password.trim()
+          ? i18n.t(EErrors.required)
+          : password.trim().length < 8
+          ? i18n.t(EErrors.password)
+          : "",
+        agreement: !agreement ? i18n.t(EErrors.required) : "",
+      };
 
-    set({ errors: newErrors });
-    return Object.values(newErrors).every((error) => !error);
-  },
+      set({ errors: newErrors });
+      return Object.values(newErrors).every((error) => !error);
+    },
 
-  register: async (code, agreement) => {
-    const { user, validate, fetchUserInfo } = get();
+    register: async (code, agreement) => {
+      const { user, validate, fetchUserInfo } = get();
 
-    if (!validate(code, agreement)) {
-      showErrorToast(i18n.t(EErrors.fields));
-      return;
-    }
+      if (!validate(code, agreement)) {
+        showErrorToast(i18n.t(EErrors.fields));
+        return;
+      }
 
-    try {
-      const response = await registerRequest({
-        email: user.login.trim(),
-        password: user.password.trim(),
-        tin: user.inn?.trim() || "",
-        type: "legal person",
-        code: code.trim(),
-      });
+      try {
+        const response = await registerRequest({
+          email: user.login.trim(),
+          password: user.password.trim(),
+          tin: user.inn?.trim() || "",
+          type: "legal person",
+          code: code.trim(),
+        });
 
-      if (response.status === 201) {
-        const loginData = await loginRequest(
-          user.login.trim(),
-          user.password.trim()
-        );
-        const { access_token, refresh_token } = loginData.data;
+        if (response.status === 201) {
+          const loginData = await loginRequest(
+            user.login.trim(),
+            user.password.trim()
+          );
+          const { access_token, refresh_token } = loginData.data;
+
+          setToken(access_token);
+          setRefresh(refresh_token);
+
+          await fetchUserInfo(false);
+          showSuccessToast(i18n.t("registrationSuccess"));
+        } else {
+          showErrorToast(i18n.t("registrationFailed"));
+        }
+      } catch (error) {
+        console.log(error);
+        if (error instanceof AxiosError) {
+          if (
+            error.response &&
+            error.response.data &&
+            error.response.data.error
+          ) {
+            showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
+          } else {
+            showErrorToast(i18n.t("registrationError"));
+          }
+        } else {
+          showErrorToast(i18n.t("unknownError"));
+        }
+      }
+    },
+
+    login: async (login, password) => {
+      try {
+        const { fetchUserInfo } = get();
+        const data = await loginRequest(login, password);
+        const { access_token, refresh_token } = data.data;
 
         setToken(access_token);
         setRefresh(refresh_token);
 
-        await fetchUserInfo(false);
-        showSuccessToast(i18n.t("registrationSuccess"));
-      } else {
-        showErrorToast(i18n.t("registrationFailed"));
-      }
-    } catch (error) {
-      console.log(error);
-      if (error instanceof AxiosError) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.error
-        ) {
-          showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
-        } else {
-          showErrorToast(i18n.t("registrationError"));
-        }
-      } else {
-        showErrorToast(i18n.t("unknownError"));
-      }
-    }
-  },
-
-  login: async (login, password) => {
-    try {
-      const { fetchUserInfo } = get();
-      const data = await loginRequest(login, password);
-      const { access_token, refresh_token } = data.data;
-
-      setToken(access_token);
-      setRefresh(refresh_token);
-
-      await fetchUserInfo(true);
-      showSuccessToast(i18n.t("loginSuccess"));
-    } catch (error) {
-      console.log(error);
-      if (error instanceof AxiosError) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.error
-        ) {
-          showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
-        } else {
-          showErrorToast(i18n.t("loginError"));
-        }
-      } else {
-        showErrorToast(i18n.t("unknownError"));
-      }
-    }
-  },
-
-  sendRegisterCode: async (email) => {
-    if (email) {
-      try {
-        await sendCode({ email });
-        showSuccessToast(i18n.t("codeSentToEmail"));
+        await fetchUserInfo(true);
+        showSuccessToast(i18n.t("loginSuccess"));
       } catch (error) {
         console.log(error);
         if (error instanceof AxiosError) {
@@ -215,22 +196,75 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
           ) {
             showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
           } else {
-            showErrorToast(i18n.t("codeSendError"));
+            showErrorToast(i18n.t("loginError"));
           }
         } else {
           showErrorToast(i18n.t("unknownError"));
         }
       }
-    } else {
-      showErrorToast(i18n.t("enterEmailFirst"));
-    }
-  },
+    },
 
-  sendResetCode: async (email) => {
-    if (email) {
+    sendRegisterCode: async (email) => {
+      if (email) {
+        try {
+          await sendCode({ email });
+          showSuccessToast(i18n.t("codeSentToEmail"));
+        } catch (error) {
+          console.log(error);
+          if (error instanceof AxiosError) {
+            if (
+              error.response &&
+              error.response.data &&
+              error.response.data.error
+            ) {
+              showErrorToast(
+                `${i18n.t("error")}: ` + error.response.data.error
+              );
+            } else {
+              showErrorToast(i18n.t("codeSendError"));
+            }
+          } else {
+            showErrorToast(i18n.t("unknownError"));
+          }
+        }
+      } else {
+        showErrorToast(i18n.t("enterEmailFirst"));
+      }
+    },
+
+    sendResetCode: async (email) => {
+      if (email) {
+        try {
+          await resetPassword({ email });
+          showSuccessToast(i18n.t("codeSentToEmail"));
+        } catch (error) {
+          console.log(error);
+          if (error instanceof AxiosError) {
+            if (
+              error.response &&
+              error.response.data &&
+              error.response.data.error
+            ) {
+              showErrorToast(
+                `${i18n.t("error")}: ` + error.response.data.error
+              );
+            } else {
+              showErrorToast(i18n.t("codeSendError"));
+            }
+          } else {
+            showErrorToast(i18n.t("unknownError"));
+          }
+        }
+      } else {
+        showErrorToast(i18n.t("enterEmailFirst"));
+      }
+    },
+
+    restorePassword: async (email, code, password, navigate) => {
       try {
-        await resetPassword({ email });
-        showSuccessToast(i18n.t("codeSentToEmail"));
+        await confirmResetPassword({ email, code, new_password: password });
+        navigate("Login", { direction: "backward" });
+        showSuccessToast(i18n.t("passwordChanged"), 5000);
       } catch (error) {
         console.log(error);
         if (error instanceof AxiosError) {
@@ -241,50 +275,25 @@ const useAuthStore = create<IUseAuthStore>((set, get) => ({
           ) {
             showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
           } else {
-            showErrorToast(i18n.t("codeSendError"));
+            showErrorToast(i18n.t("passwordRecoveryError"));
           }
         } else {
           showErrorToast(i18n.t("unknownError"));
         }
       }
-    } else {
-      showErrorToast(i18n.t("enterEmailFirst"));
-    }
-  },
+    },
 
-  restorePassword: async (email, code, password, navigate) => {
-    try {
-      await confirmResetPassword({ email, code, new_password: password });
-      navigate("Login", { direction: "backward" });
-      showSuccessToast(i18n.t("passwordChanged"), 5000);
-    } catch (error) {
-      console.log(error);
-      if (error instanceof AxiosError) {
-        if (
-          error.response &&
-          error.response.data &&
-          error.response.data.error
-        ) {
-          showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
-        } else {
-          showErrorToast(i18n.t("passwordRecoveryError"));
-        }
-      } else {
-        showErrorToast(i18n.t("unknownError"));
-      }
-    }
-  },
+    setLanguage: (lang) => {
+      i18n.changeLanguage(lang);
+      AsyncStorage.setItem("language", lang);
+      set({ language: lang });
+    },
 
-  setLanguage: (lang) => {
-    i18n.changeLanguage(lang);
-    AsyncStorage.setItem("language", lang);
-    set({ language: lang });
-  },
-
-  logout: (clearAccounts) => {
-    forceLogout();
-    clearAccounts();
-  },
-}));
+    logout: (clearAccounts) => {
+      forceLogout();
+      clearAccounts();
+    },
+  };
+});
 
 export default useAuthStore;

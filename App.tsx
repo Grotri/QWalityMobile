@@ -4,12 +4,12 @@ import * as NavigationBar from "expo-navigation-bar";
 import React, { useEffect, useState } from "react";
 import {
   AppState,
+  LogBox,
   StatusBar as NativeStatusBar,
   Platform,
   StyleSheet,
-  View
+  View,
 } from "react-native";
-import { giveLisence } from "./src/api/license";
 import { getToken } from "./src/api/token";
 import Loader from "./src/components/atoms/Loader/Loader";
 import { palette } from "./src/constants/palette";
@@ -23,8 +23,10 @@ import { Navigation } from "./src/navigation";
 const App = () => {
   const { user, language, setLanguage, fetchUserInfo } = useAuthStore();
   const { fetchAccounts } = useAccountStore();
-  const { fetchCameras, fetchDefects } = useCamerasStore();
+  const { fetchCameras } = useCamerasStore();
   const [areFontsLoaded, setAreFontsLoaded] = useState<boolean>(false);
+
+  LogBox.ignoreLogs(["useInsertionEffect must not schedule updates"]);
 
   useEffect(() => {
     const loadFont = async () => {
@@ -85,17 +87,8 @@ const App = () => {
     if (user.id) {
       fetchCameras();
       fetchAccounts();
-      if (user.role === "owner") {
-        giveLisence();
-      }
-
-      const intervalId = setInterval(() => {
-        fetchDefects();
-      }, 10000);
-
-      return () => clearInterval(intervalId);
     }
-  }, [fetchAccounts, fetchCameras, fetchDefects, user.id, user.role]);
+  }, [fetchAccounts, fetchCameras, user.id]);
 
   useEffect(() => {
     const checkTokenAndFetchUser = async () => {

@@ -44,7 +44,7 @@ const AccountManagement = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleSectionChange = (sections: number[]) => {
-    setActiveSections(sections);
+    setTimeout(() => setActiveSections(sections), 0);
   };
 
   const changeAccountField = (
@@ -195,8 +195,8 @@ const AccountManagement = () => {
     >
       <TouchableWithoutFeedback onPress={closeDd}>
         <View style={styles.managerWrapper}>
-          {isLoading && <Loader />}
-          {!isLoading && !sections.length && (
+          {(!user.id || isLoading) && <Loader />}
+          {user.id && !isLoading && !sections.length && (
             <Text style={styles.noAccounts}>{t("noManagedAccounts")}</Text>
           )}
           {!isLoading && !!sections.length && (

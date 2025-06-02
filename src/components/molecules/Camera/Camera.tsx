@@ -1,4 +1,5 @@
 import { CameraIcon } from "@/assets/icons";
+import { formatISOToCustomDate } from "@/src/helpers/formatDate";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -16,7 +17,14 @@ const Defect: FC<ICameraItem> = ({ camera, onPress }) => {
         <View style={styles.image}>
           <CameraIcon width={20} height={20} />
         </View>
-        <Text style={styles.itemName}>{camera.title}</Text>
+        <View>
+          <Text style={styles.itemName}>{camera.title}</Text>
+          {camera.deletedAt && (
+            <Text style={styles.itemDate}>
+              {formatISOToCustomDate(camera.deletedAt)}
+            </Text>
+          )}
+        </View>
       </View>
       <Button onPress={onPress}>
         <Text style={styles.btnText}>{t("restore")}</Text>
