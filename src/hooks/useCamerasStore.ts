@@ -293,18 +293,24 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     }
   },
 
-  clearTrashBin: () => {
+  clearTrashBin: async (onClose) => {
     const { cameras } = get();
     try {
       set({ loading: true, error: null });
+      await permanentlyDeleteDefects();
+      await permanentlyDeleteCameras();
       set({
-        cameras: cameras.map((c) => ({
-          ...c,
-          defects: c.defects.filter((d) => !d.deletedAt),
+        cameras: cameras
+          .filter((camera) => !camera.deletedAt)
+          .map((camera) => ({
+            ...camera,
+            defects: camera.defects.filter((defect) => !defect.deletedAt),
         })),
         loading: false,
         error: false,
       });
+      
+      onClose();
       showSuccessToast(i18n.t("trashCleared"));
     } catch (error) {
       showErrorToast(i18n.t("failedToClearTrash"));
@@ -313,7 +319,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     }
   },
 
-  clearTrashBinByDates: (startDate, endDate) => {
+  clearTrashBinByDates: async (startDate, endDate, onClose) => {
     const { cameras } = get();
 
     if (!startDate || !endDate) {
@@ -333,13 +339,13 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     end.setHours(23, 59, 59, 999);
 
     try {
-      set({ loading: true, error: null });
+      set({ error: null });
 
       let foundSomething = false;
 
-      const updatedCameras = cameras.map((camera) => ({
-        ...camera,
-        defects: camera.defects.filter((defect) => {
+      const filteredCameras = cameras
+        .map((camera) => {
+          const filteredDefects = camera.defects.filter((defect) => {
           if (!defect.deletedAt) return true;
 
           const defectTimestamp = parseCustomDate(defect.deletedAt);
@@ -353,26 +359,54 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
           }
 
           return true;
-        }),
-      }));
+          });
+
+          return {
+            ...camera,
+            defects: filteredDefects,
+          };
+        })
+        .filter((camera) => {
+          if (!camera.deletedAt) return true;
+
+          const deletedTimestamp = parseCustomDate(camera.deletedAt);
+          const shouldDelete =
+            deletedTimestamp >= start.getTime() &&
+            deletedTimestamp <= end.getTime();
+
+          if (shouldDelete) {
+            foundSomething = true;
+            return false;
+          }
+
+          return true;
+        });
 
       if (!foundSomething) {
         showInfoToast(i18n.t("noDefectsFoundInPeriod"));
-        set({ loading: false });
         return;
       }
 
+      await permanentlyDeleteCamerasByRange({
+        start_date: start.toISOString(),
+        end_date: end.toISOString(),
+      });
+      await permanentlyDeleteDefectsByRange({
+        start_date: start.toISOString(),
+        end_date: end.toISOString(),
+      });
+
       set({
-        cameras: updatedCameras,
-        loading: false,
+        cameras: filteredCameras,
         error: false,
       });
 
+      onClose();
       showSuccessToast(i18n.t("trashClearedForPeriod"));
     } catch (error) {
       showErrorToast(i18n.t("failedToClearTrashForPeriod"));
       console.error(error);
-      set({ error, loading: false });
+      set({ error });
     }
   },
 
