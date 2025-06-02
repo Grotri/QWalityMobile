@@ -33,6 +33,9 @@ export const getStyles = () => {
       lineHeight: getLineHeight(21),
       fontFamily: fonts.semibold,
     },
+    itemDate: {
+      color: palette.mainText,
+    },
     btnText: {
       color: palette.mainText,
       textDecorationLine: "underline",

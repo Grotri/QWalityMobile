@@ -1,5 +1,5 @@
 import { formatUptime } from "@/src/helpers/formatUptime";
-import React, { FC, Fragment, useState } from "react";
+import React, { FC, Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
 import Accordion from "react-native-collapsible/Accordion";
@@ -40,13 +40,20 @@ const CameraAccordion: FC<ICameraAccordion> = ({
   setIsFilterCameraModalOpen,
   selectedDefect,
   setSelectedDefect,
+  isOnline,
 }) => {
   const DEFAULT_PAGE_CAPACITY = 5;
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
-  const { activeSections, setActiveSections, deleteDefect } = useCamerasStore();
+  const {
+    activeSectionsOnline,
+    activeSectionsOffline,
+    setActiveSectionsOnline,
+    setActiveSectionsOffline,
+    deleteDefect,
+  } = useCamerasStore();
   const [cameraPages, setCameraPages] = useState<Record<string, number>>({});
   const [sortModalCameraId, setSortModalCameraId] = useState<string | null>(
     null
@@ -62,7 +69,13 @@ const CameraAccordion: FC<ICameraAccordion> = ({
   >({});
 
   const handleSectionChange = (sections: number[]) => {
-    setActiveSections(sections);
+    setTimeout(() => {
+      if (isOnline) {
+        setActiveSectionsOnline(sections);
+      } else {
+        setActiveSectionsOffline(sections);
+      }
+    }, 0);
   };
 
   const handlePageChange = (cameraId: string, newPage: number) => {
@@ -112,6 +125,11 @@ const CameraAccordion: FC<ICameraAccordion> = ({
     }
   };
 
+  useEffect(() => {
+    setActiveSectionsOnline([]);
+    setActiveSectionsOffline([]);
+  }, []);
+
   const renderHeader = (camera: ICamera, index: number) => {
     const defects = camera.defects.filter((defect) => !defect.deletedAt);
     const uptime = formatUptime(camera.uptime);
@@ -125,9 +143,14 @@ const CameraAccordion: FC<ICameraAccordion> = ({
               <Text style={styles.cameraTitle}>{camera.title}</Text>
             </View>
             <Text style={styles.defectText}>
-              {defects.length}/100 {t("defects")}
+              {defects.length}/{camera.maxDefects} {t("defects")}
             </Text>
-            <Text style={styles.defectText}>{defects.length}%</Text>
+            <Text style={styles.defectText}>
+              {camera.maxDefects
+                ? Math.floor((defects.length / camera.maxDefects) * 100)
+                : 0}
+              %
+            </Text>
           </View>
           <View style={styles.line} />
           <View style={styles.stateWrapper}>
@@ -156,7 +179,11 @@ const CameraAccordion: FC<ICameraAccordion> = ({
         </View>
         <IconRotated
           icon={<ArrowAccordionIcon />}
-          isActive={activeSections.includes(index)}
+          isActive={
+            isOnline
+              ? activeSectionsOnline.includes(index)
+              : activeSectionsOffline.includes(index)
+          }
         />
       </View>
     );
@@ -322,7 +349,7 @@ const CameraAccordion: FC<ICameraAccordion> = ({
   return (
     <Accordion
       sections={sections}
-      activeSections={activeSections}
+      activeSections={isOnline ? activeSectionsOnline : activeSectionsOffline}
       renderHeader={renderHeader}
       renderContent={renderContent}
       onChange={handleSectionChange}
