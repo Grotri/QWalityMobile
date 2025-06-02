@@ -12,6 +12,7 @@ import { usePalette } from "../../../hooks/usePalette";
 import { useMainNavigation } from "../../../hooks/useTypedNavigation";
 import Button from "../../atoms/Button";
 import DatePicker from "../../atoms/DatePicker";
+import Loader from "../../atoms/Loader/Loader";
 import Modal from "../../atoms/Modal";
 import BottomFixIcon from "../../molecules/BottomFixIcon";
 import Camera from "../../molecules/Camera";
@@ -29,6 +30,8 @@ const TrashBin = () => {
     recoverCamera,
     clearTrashBin,
     clearTrashBinByDates,
+    loading,
+    error,
   } = useCamerasStore();
   const { user } = useAuthStore();
   const cameraLimits = useCameraLimits();
@@ -58,11 +61,9 @@ const TrashBin = () => {
     return timeB - timeA;
   });
 
-  useEffect(() => {
-    if (isModalOpen) {
-      setIsModalOpen(false);
-    }
-  }, [cameras]);
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -78,7 +79,7 @@ const TrashBin = () => {
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
       isWholeBlurOn={isModalOpen}
       bottomIcon={
-        deletedDefects.length > 0 && user.role !== "user" ? (
+        trashItems.length > 0 && user.role !== "user" ? (
           <BottomFixIcon
             icon={<TrashBinIcon width={36} height={36} />}
             text={t("clearCart")}
@@ -89,73 +90,87 @@ const TrashBin = () => {
         ) : null
       }
     >
-      <View style={styles.wrapper}>
-        {trashItems.length > 0 ? (
-          trashItems.map((item) => {
-            if (item.type === "defect") {
-              return (
-                <Defect
-                  key={item.data.id}
-                  defect={item.data as IDefect}
-                  textBtn={user.role !== "user" ? t("restore") : undefined}
-                  onPress={() => recoverDefect(item.cameraId, item.data.id)}
-                  isInTrashBin
+      {(!user.id || loading) && <Loader />}
+      {!loading && error && (
+        <Text style={styles.errorText}>{t("errorOccurred")}</Text>
+      )}
+      {user.id && !loading && !error && !trashItems.length && (
+        <Text style={styles.noDefects}>{t("trashEmpty")}</Text>
+      )}
+      {!loading && !error && trashItems.length > 0 && (
+        <>
+          <View style={styles.wrapper}>
+            {trashItems.map((item) => {
+              if (item.type === "defect") {
+                return (
+                  <Defect
+                    key={item.data.id}
+                    defect={item.data as IDefect}
+                    textBtn={user.role !== "user" ? t("restore") : undefined}
+                    onPress={() => recoverDefect(item.cameraId, item.data.id)}
+                    isInTrashBin
+                  />
+                );
+              } else {
+                return (
+                  <Camera
+                    key={item.data.id}
+                    camera={item.data as ICamera}
+                    onPress={() => {
+                      if (
+                        cameras.filter((c) => !c.deletedAt).length <
+                        cameraLimits
+                      ) {
+                        recoverCamera(item.cameraId);
+                      } else {
+                        showErrorToast(t("camerasLimitReached"));
+                      }
+                    }}
+                  />
+                );
+              }
+            })}
+          </View>
+          <Modal isVisible={isModalOpen} setIsVisible={setIsModalOpen}>
+            <View style={styles.modal}>
+              <View style={styles.crossIconWrapper}>
+                <CrossIcon style={styles.crossIcon} onClick={closeModal} />
+                <Text style={styles.modalTitle}>{t("deleteHistory")}</Text>
+              </View>
+              <View style={styles.row}>
+                <DatePicker
+                  date={startDate}
+                  setDate={(date) => setStartDate(date)}
                 />
-              );
-            } else {
-              return (
-                <Camera
-                  key={item.data.id}
-                  camera={item.data as ICamera}
-                  onPress={() => {
-                    if (
-                      cameras.filter((c) => !c.deletedAt).length < cameraLimits
-                    ) {
-                      recoverCamera(item.cameraId);
-                    } else {
-                      showErrorToast(t("camerasLimitReached"));
-                    }
-                  }}
+                <View style={styles.dash} />
+                <DatePicker
+                  date={endDate}
+                  setDate={(date) => setEndDate(date)}
                 />
-              );
-            }
-          })
-        ) : (
-          <Text style={styles.noDefects}>{t("trashEmpty")}</Text>
-        )}
-      </View>
-      <Modal isVisible={isModalOpen} setIsVisible={setIsModalOpen}>
-        <View style={styles.modal}>
-          <View style={styles.crossIconWrapper}>
-            <CrossIcon
-              style={styles.crossIcon}
-              onClick={() => setIsModalOpen(false)}
-            />
-            <Text style={styles.modalTitle}>{t("deleteHistory")}</Text>
-          </View>
-          <View style={styles.row}>
-            <DatePicker
-              date={startDate}
-              setDate={(date) => setStartDate(date)}
-            />
-            <View style={styles.dash} />
-            <DatePicker date={endDate} setDate={(date) => setEndDate(date)} />
-          </View>
-          <View style={styles.row}>
-            <Button color="red" style={styles.btnModal} onPress={clearTrashBin}>
-              <Text style={styles.btnModalText}>{t("deleteAll")}</Text>
-            </Button>
-            <View style={styles.empty} />
-            <Button
-              customColor={palette.modalBtn}
-              style={styles.btnModal}
-              onPress={() => clearTrashBinByDates(startDate, endDate)}
-            >
-              <Text style={styles.btnModalText}>{t("delete")}</Text>
-            </Button>
-          </View>
-        </View>
-      </Modal>
+              </View>
+              <View style={styles.row}>
+                <Button
+                  color="red"
+                  style={styles.btnModal}
+                  onPress={() => clearTrashBin(closeModal)}
+                >
+                  <Text style={styles.btnModalText}>{t("deleteAll")}</Text>
+                </Button>
+                <View style={styles.empty} />
+                <Button
+                  customColor={palette.modalBtn}
+                  style={styles.btnModal}
+                  onPress={() =>
+                    clearTrashBinByDates(startDate, endDate, closeModal)
+                  }
+                >
+                  <Text style={styles.btnModalText}>{t("delete")}</Text>
+                </Button>
+              </View>
+            </View>
+          </Modal>
+        </>
+      )}
     </PageTemplate>
   );
 };
