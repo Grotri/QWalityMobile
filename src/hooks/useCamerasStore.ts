@@ -1,9 +1,24 @@
 import { create } from "zustand";
-import { createCamera, getCameras } from "../api/camera";
-import { getDefects } from "../api/defects";
+import {
+  changeCamera,
+  createCamera,
+  deleteCameraDefects,
+  getCameras,
+  moveCameraToTrash,
+  permanentlyDeleteCameras,
+  permanentlyDeleteCamerasByRange,
+  restoreCameraFromTrash,
+} from "../api/camera";
+import {
+  getDefects,
+  moveDefectToTrash,
+  permanentlyDeleteDefects,
+  permanentlyDeleteDefectsByRange,
+  restoreDefectFromTrash,
+} from "../api/defects";
 import { EErrors } from "../constants/errors";
 import { linkPattern } from "../constants/patterns";
-import { convertISODate, parseCustomDate } from "../helpers/formatDate";
+import { parseCustomDate } from "../helpers/formatDate";
 import {
   showErrorToast,
   showInfoToast,
@@ -43,8 +58,12 @@ interface IUseCamerasStore extends IStoreStatus {
   deleteHistory: (cameraId: string) => void;
   deleteDefect: (cameraId: string, defectId: string) => void;
   recoverDefect: (cameraId: string, defectId: string) => void;
-  clearTrashBin: () => void;
-  clearTrashBinByDates: (startDate: Date | null, endDate: Date | null) => void;
+  clearTrashBin: (onClose: () => void) => void;
+  clearTrashBinByDates: (
+    startDate: Date | null,
+    endDate: Date | null,
+    onClose: () => void
+  ) => void;
 }
 
 const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
@@ -74,6 +93,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
   fetchDefects: async () => {
     try {
       const resDefects = await getDefects();
+      set({ error: null });
       set((state) => ({
         cameras: state.cameras.map((camera) => {
           const defectNode = resDefects.data.find(
@@ -82,10 +102,6 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
           return {
             ...camera,
             defects: defectNode ? convertDefects(defectNode) : camera.defects,
-            uptime:
-              defectNode && defectNode.defects.length > 0
-                ? defectNode.defects[0].uptime
-                : camera.uptime,
           };
         }),
         error: false,
@@ -239,38 +255,35 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
     }
   },
 
-  deleteDefect: (cameraId, defectId) => {
+  deleteDefect: async (cameraId, defectId) => {
     const { cameras } = get();
-    const now = convertISODate(new Date().toISOString());
-
     try {
-      set({ loading: true, error: null });
+      const requestRes = await moveDefectToTrash(defectId);
       set({
         cameras: cameras.map((c) =>
           c.id === cameraId
             ? {
                 ...c,
                 defects: c.defects.map((d) =>
-                  d.id === defectId ? { ...d, deletedAt: now } : d
+                  d.id === defectId
+                    ? { ...d, deletedAt: requestRes.data.deleted_at }
+                    : d
                 ),
               }
             : c
         ),
-        loading: false,
-        error: false,
       });
       showSuccessToast(i18n.t("defectMovedToTrash"));
     } catch (error) {
       showErrorToast(i18n.t("failedToDeleteDefect"));
       console.error(error);
-      set({ error, loading: false });
     }
   },
 
-  recoverDefect: (cameraId, defectId) => {
+  recoverDefect: async (cameraId, defectId) => {
     const { cameras } = get();
     try {
-      set({ loading: true, error: null });
+      await restoreDefectFromTrash(defectId);
       set({
         cameras: cameras.map((c) =>
           c.id === cameraId
@@ -282,14 +295,11 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
               }
             : c
         ),
-        loading: false,
-        error: false,
       });
       showSuccessToast(i18n.t("defectRecovered"));
     } catch (error) {
       showErrorToast(i18n.t("failedToRestoreDefect"));
       console.error(error);
-      set({ error, loading: false });
     }
   },
 
