@@ -1,3 +1,4 @@
+import { formatISOToCustomDate } from "@/src/helpers/formatDate";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -38,7 +39,9 @@ const Defect: FC<IDefectItem> = ({
         <View>
           <Text style={styles.itemName}>{t(name)}</Text>
           <Text style={styles.itemDate}>
-            {isInTrashBin && deletedAt ? deletedAt : date}
+            {isInTrashBin && deletedAt
+              ? formatISOToCustomDate(deletedAt)
+              : date}
           </Text>
         </View>
       </View>

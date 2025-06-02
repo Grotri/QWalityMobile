@@ -27,7 +27,13 @@ const Main = () => {
   const { user } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
-  const { cameras: camerasInfo, loading, error } = useCamerasStore();
+  const {
+    cameras: camerasInfo,
+    loading,
+    error,
+    fetchDefects,
+    fetchCameras,
+  } = useCamerasStore();
   const cameraLimits = useCameraLimits();
   const [cameras, setCameras] = useState<ICamera[]>([]);
   const [activeSections, setActiveSections] = useState<number[]>([]);
@@ -64,7 +70,7 @@ const Main = () => {
   ];
 
   const handleSectionChange = (sections: number[]) => {
-    setActiveSections(sections);
+    setTimeout(() => setActiveSections(sections), 0);
   };
 
   useEffect(() => {
@@ -74,6 +80,23 @@ const Main = () => {
   useEffect(() => {
     setIsAddCameraModalOpen(false);
   }, [camerasInfo.length]);
+
+  useEffect(() => {
+    if (user.id) {
+      const defectsInterval = setInterval(() => {
+        fetchDefects();
+      }, 10000);
+
+      const camerasInterval = setInterval(() => {
+        fetchCameras(true);
+      }, 60000);
+
+      return () => {
+        clearInterval(defectsInterval);
+        clearInterval(camerasInterval);
+      };
+    }
+  }, [fetchDefects, fetchCameras, user.id, user.role]);
 
   const renderHeader = (section: (typeof sections)[number], index: number) => (
     <View style={styles.header}>
@@ -105,7 +128,7 @@ const Main = () => {
   const renderContent = (section: (typeof sections)[number], index: number) => {
     const searchText = index === 0 ? onlineSearch : offlineSearch;
     const filteredCameras = section.cameras.filter((camera) =>
-      camera.title.toLowerCase().includes(searchText.toLowerCase())
+      camera.title.toLowerCase().includes(searchText.trim().toLowerCase())
     );
 
     if (filteredCameras.length === 0) {
@@ -143,6 +166,7 @@ const Main = () => {
         }
         selectedDefect={selectedDefect}
         setSelectedDefect={setSelectedDefect}
+        isOnline={index === 0}
       />
     );
   };
@@ -176,9 +200,11 @@ const Main = () => {
         !!selectedDefect
       }
     >
-      {loading && <Loader />}
-      {!loading && error && <Text style={styles.errorText}>{error}</Text>}
-      {!loading && !error && (
+      {(!user.id || loading) && <Loader />}
+      {!loading && error && (
+        <Text style={styles.errorText}>{t("errorOccurred")}</Text>
+      )}
+      {!loading && !error && user.id && (
         <>
           <View style={styles.wrapper}>
             <Accordion
