@@ -1,9 +1,13 @@
 import { removeRefresh, removeToken } from "../api/token";
-import useAuthStore from "../hooks/useAuthStore";
 
-export const forceLogout = async () => {
-  const { clearUser } = useAuthStore.getState();
+let clearUserCallback: (() => void) | null = null;
+
+export const initForceLogout = (clearUser: () => void) => {
+  clearUserCallback = clearUser;
+};
+
+export const forceLogout = () => {
   removeToken();
   removeRefresh();
-  clearUser();
+  clearUserCallback?.();
 };

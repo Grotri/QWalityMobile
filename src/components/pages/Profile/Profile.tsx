@@ -26,14 +26,13 @@ import { IErrors, initialErrors } from "./types";
 const Profile = () => {
   const { navigate } = useMainNavigation();
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, loading, error } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
   const [userInfo, setUserInfo] = useState<IUser>({ ...initialUser });
   const [errors, setErrors] = useState<IErrors>({ ...initialErrors });
   const [code, setCode] = useState<string>("");
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const cancel = () => {
     setIsEditMode(false);
@@ -82,11 +81,7 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
     setUserInfo({ ...user });
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
   }, [user]);
 
   return (
@@ -95,8 +90,11 @@ const Profile = () => {
       headerText={t("profile")}
       onHeaderClick={() => navigate("Main", { direction: "backward" })}
     >
-      {(isLoading || !userInfo.id) && <Loader />}
-      {!isLoading && userInfo.id && (
+      {(loading || !userInfo.id) && <Loader />}
+      {!loading && error && (
+        <Text style={styles.errorText}>{t("errorOccurred")}</Text>
+      )}
+      {!loading && !error && userInfo.id && (
         <View style={styles.profileWrapper}>
           <ProfileIcon />
           <View style={styles.card}>

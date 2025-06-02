@@ -257,5 +257,6 @@
     "day": "j",
     "hour": "h",
     "minute": "m",
-    "unavailableCode": "L'envoi du code est temporairement indisponible"
+    "unavailableCode": "L'envoi du code est temporairement indisponible",
+    "errorOccurred": "Une erreur s'est produite"
 }
