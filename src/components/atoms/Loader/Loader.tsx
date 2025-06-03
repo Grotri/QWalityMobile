@@ -1,8 +1,11 @@
 import { usePalette } from "@/src/hooks/usePalette";
-import React from "react";
+import React, { FC } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
 
-const Loader = () => {
+const Loader: FC<{ sizeIOS?: "small" | "large"; size?: number }> = ({
+  sizeIOS = "large",
+  size = 70,
+}) => {
   const palette = usePalette();
 
   return (
@@ -14,7 +17,7 @@ const Loader = () => {
       }}
     >
       <ActivityIndicator
-        size={Platform.OS === "ios" ? "large" : 70}
+        size={Platform.OS === "ios" ? sizeIOS : size}
         color={palette.white}
       />
     </View>

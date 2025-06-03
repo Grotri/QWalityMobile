@@ -21,6 +21,10 @@ export const getStyles = () => {
       lineHeight: getLineHeight(21),
       marginBottom: 12,
     },
+    loaderWrapper: {
+      marginBottom: 36,
+      height: 40,
+    },
     confirmationInputWrapper: {
       width: "100%",
       paddingHorizontal: 12,
