@@ -258,5 +258,7 @@
     "hour": "h",
     "minute": "m",
     "unavailableCode": "L'envoi du code est temporairement indisponible",
-    "errorOccurred": "Une erreur s'est produite"
+    "errorOccurred": "Une erreur s'est produite",
+    "accountDeleted": "Compte supprimé avec succès",
+    "accountDeleteError": "Une erreur s'est produite lors de la suppression du compte"
 }

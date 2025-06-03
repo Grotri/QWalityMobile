@@ -258,5 +258,7 @@
     "hour": "ч",
     "minute": "м",
     "unavailableCode": "Отправка кода временно недоступна",
-    "errorOccurred": "Произошла ошибка"
+    "errorOccurred": "Произошла ошибка",
+    "accountDeleted": "Аккаунт успешно удален",
+    "accountDeleteError": "Произошла ошибка при удалении аккаунта"
 }

@@ -22,7 +22,15 @@ import { getStyles } from "./styles";
 const Settings = () => {
   const { navigate } = useMainNavigation();
   const { t } = useTranslation();
-  const { user, setUserField, logout, language, setLanguage } = useAuthStore();
+  const {
+    user,
+    setUserField,
+    logout,
+    language,
+    setLanguage,
+    sendDeleteCode,
+    deleteAccount,
+  } = useAuthStore();
   const { clearAccounts } = useAccountStore();
   const styles = getStyles();
 
@@ -52,12 +60,12 @@ const Settings = () => {
     setOpenDropdown(null);
   };
 
-  const deleteAccount = () => {
+  const handleDeleteAccount = () => {
     if (!code.trim()) {
       setError(t(EErrors.required));
       showErrorToast(t("enterCodeFirst"));
     } else {
-      logout(clearAccounts);
+      deleteAccount(code, () => logout(clearAccounts));
     }
   };
 
@@ -224,12 +232,20 @@ const Settings = () => {
               errorText={error}
               maxLength={6}
             />
-            <Button style={styles.codeBtn} color="blue">
+            <Button
+              style={styles.codeBtn}
+              color="blue"
+              onPress={sendDeleteCode}
+            >
               <Text style={styles.modalBtnCodeText}>{t("sendCode")}</Text>
             </Button>
           </View>
           <View style={styles.modalBtns}>
-            <Button style={styles.modalBtn} color="red" onPress={deleteAccount}>
+            <Button
+              style={styles.modalBtn}
+              color="red"
+              onPress={handleDeleteAccount}
+            >
               <Text style={styles.modalBtnText}>{t("delete")}</Text>
             </Button>
             <Button
