@@ -8,6 +8,7 @@ import {
   resetPassword,
   sendCode,
 } from "../api/auth";
+import { confirmDeleteAccount, sendDeleteAccountCode } from "../api/client";
 import { forceLogout, initForceLogout } from "../api/forceLogout";
 import { setRefresh, setToken } from "../api/token";
 import { getUserInfo } from "../api/user";
@@ -48,6 +49,8 @@ interface IUseAuthStore extends IStoreStatus {
     password: string,
     navigate: any
   ) => void;
+  sendDeleteCode: () => void;
+  deleteAccount: (code: string, onClose: () => void) => void;
 }
 
 const useAuthStore = create<IUseAuthStore>((set, get) => {
@@ -276,6 +279,51 @@ const useAuthStore = create<IUseAuthStore>((set, get) => {
             showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
           } else {
             showErrorToast(i18n.t("passwordRecoveryError"));
+          }
+        } else {
+          showErrorToast(i18n.t("unknownError"));
+        }
+      }
+    },
+
+    sendDeleteCode: async () => {
+      try {
+        await sendDeleteAccountCode();
+        showSuccessToast(i18n.t("codeSentToEmail"));
+      } catch (error) {
+        console.log(error);
+        if (error instanceof AxiosError) {
+          if (
+            error.response &&
+            error.response.data &&
+            error.response.data.error
+          ) {
+            showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
+          } else {
+            showErrorToast(i18n.t("codeSendError"));
+          }
+        } else {
+          showErrorToast(i18n.t("unknownError"));
+        }
+      }
+    },
+
+    deleteAccount: async (code, onClose) => {
+      try {
+        await confirmDeleteAccount(code);
+        onClose();
+        showSuccessToast(i18n.t("accountDeleted"));
+      } catch (error) {
+        console.log(error);
+        if (error instanceof AxiosError) {
+          if (
+            error.response &&
+            error.response.data &&
+            error.response.data.error
+          ) {
+            showErrorToast(`${i18n.t("error")}: ` + error.response.data.error);
+          } else {
+            showErrorToast(i18n.t("accountDeleteError"));
           }
         } else {
           showErrorToast(i18n.t("unknownError"));

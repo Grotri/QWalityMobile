@@ -258,5 +258,7 @@
     "hour": "h",
     "minute": "m",
     "unavailableCode": "Sending the code is temporarily unavailable",
-    "errorOccurred": "An error has occurred"
+    "errorOccurred": "An error has occurred",
+    "accountDeleted": "Account successfully deleted",
+    "accountDeleteError": "An error occurred when deleting the account"
 }
