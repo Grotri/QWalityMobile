@@ -1,3 +1,5 @@
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import { create } from "zustand";
 import {
   changeCamera,
@@ -44,9 +46,10 @@ const initialErrors: IErrors = {
 interface IUseCamerasStore extends IStoreStatus {
   cameras: ICamera[];
   errors: IErrors;
+  photoLoading: boolean;
   activeSectionsOnline: number[];
-  setActiveSectionsOnline: (sections: number[]) => void;
   activeSectionsOffline: number[];
+  setActiveSectionsOnline: (sections: number[]) => void;
   setActiveSectionsOffline: (sections: number[]) => void;
   setErrorsField: (field: keyof IErrors, error: string) => void;
   refreshErrors: () => void;
@@ -66,10 +69,16 @@ interface IUseCamerasStore extends IStoreStatus {
     endDate: Date | null,
     onClose: () => void
   ) => void;
+  downloadDefectImage: (
+    photoUrl: string,
+    id: string,
+    onClose: () => void
+  ) => void;
 }
 
 const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
   loading: false,
+  photoLoading: false,
   error: null,
   activeSectionsOnline: [],
   activeSectionsOffline: [],
@@ -317,7 +326,7 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
         loading: false,
         error: false,
       });
-      
+
       onClose();
       showSuccessToast(i18n.t("trashCleared"));
     } catch (error) {
@@ -420,6 +429,43 @@ const useCamerasStore = create<IUseCamerasStore>((set, get) => ({
 
   refreshErrors: () => {
     set({ errors: { ...initialErrors } });
+  },
+
+  downloadDefectImage: async (photoUrl, id, onClose) => {
+    const filename = `defect_${id}.jpg`;
+    try {
+      set({ photoLoading: true });
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        photoUrl,
+        fileUri
+      );
+      const downloadResult = await downloadResumable.downloadAsync();
+
+      if (!downloadResult) {
+        throw new Error("Download failed — no result returned");
+      }
+
+      const uri = downloadResult.uri;
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: "image/jpeg",
+          dialogTitle: "Открыть изображение",
+        });
+      } else {
+        throw new Error("Sharing not available on this device");
+      }
+
+      set({ photoLoading: false });
+    } catch (error) {
+      console.error(error);
+      set({ photoLoading: false });
+      showErrorToast(i18n.t("downloadError"));
+    } finally {
+      onClose();
+    }
   },
 }));
 
