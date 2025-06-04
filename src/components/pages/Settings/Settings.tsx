@@ -1,3 +1,4 @@
+import { editAccount } from "@/src/api/user";
 import { fontSizes } from "@/src/constants/fontSizes";
 import { languages } from "@/src/constants/languages";
 import { themes } from "@/src/constants/themes";
@@ -46,10 +47,12 @@ const Settings = () => {
 
   const toggleTheme = (value: string) => {
     setUserField("theme", value as TTheme);
+    editAccount(user.id, { color_theme: value });
   };
 
   const toggleFontSize = (value: string) => {
     setUserField("fontSize", value as TFontSize);
+    editAccount(user.id, { font_size: value });
   };
 
   const toggleLanguage = (value: string) => {
@@ -120,56 +123,56 @@ const Settings = () => {
                 arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
               />
             </View>
-            <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>{t("theme")}</Text>
-              <Dropdown
-                data={themes.map((item) => ({
-                  value: item.value,
-                  label: t(item.label),
-                }))}
-                setValue={toggleTheme}
-                value={user.theme}
-                isOpen={openDropdown === "theme"}
-                setIsOpen={(val) => setOpenDropdown(val ? "theme" : null)}
-                wrapperStyle={[styles.wrapperStyle, { zIndex: 3 }]}
-                dropdownStyle={styles.dropdownStyle}
-                arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
-              />
-            </View>
-            <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>{t("fontSize")}</Text>
-              <Dropdown
-                data={fontSizes.map((item) => ({
-                  value: item.value,
-                  label: t(item.label),
-                }))}
-                setValue={toggleFontSize}
-                value={user.fontSize}
-                isOpen={openDropdown === "fonts"}
-                setIsOpen={(val) => setOpenDropdown(val ? "fonts" : null)}
-                wrapperStyle={[styles.wrapperStyle, { zIndex: 2 }]}
-                dropdownStyle={styles.dropdownStyle}
-                arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
-              />
-            </View>
-            <View style={styles.dropdownWrapper}>
-              <Text style={styles.dropdownText}>{t("language")}</Text>
-              <Dropdown
-                data={languages.map((item) => ({
-                  value: item.value,
-                  label: t(item.label),
-                }))}
-                setValue={toggleLanguage}
-                value={language}
-                isOpen={openDropdown === "lang"}
-                setIsOpen={(val) => setOpenDropdown(val ? "lang" : null)}
-                wrapperStyle={styles.wrapperStyle}
-                dropdownStyle={styles.dropdownStyle}
-                arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
-              />
-            </View>
           </Fragment>
         )}
+        <View style={styles.dropdownWrapper}>
+          <Text style={styles.dropdownText}>{t("theme")}</Text>
+          <Dropdown
+            data={themes.map((item) => ({
+              value: item.value,
+              label: t(item.label),
+            }))}
+            setValue={toggleTheme}
+            value={user.theme}
+            isOpen={openDropdown === "theme"}
+            setIsOpen={(val) => setOpenDropdown(val ? "theme" : null)}
+            wrapperStyle={[styles.wrapperStyle, { zIndex: 3 }]}
+            dropdownStyle={styles.dropdownStyle}
+            arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
+          />
+        </View>
+        <View style={styles.dropdownWrapper}>
+          <Text style={styles.dropdownText}>{t("fontSize")}</Text>
+          <Dropdown
+            data={fontSizes.map((item) => ({
+              value: item.value,
+              label: t(item.label),
+            }))}
+            setValue={toggleFontSize}
+            value={user.fontSize}
+            isOpen={openDropdown === "fonts"}
+            setIsOpen={(val) => setOpenDropdown(val ? "fonts" : null)}
+            wrapperStyle={[styles.wrapperStyle, { zIndex: 2 }]}
+            dropdownStyle={styles.dropdownStyle}
+            arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
+          />
+        </View>
+        <View style={styles.dropdownWrapper}>
+          <Text style={styles.dropdownText}>{t("language")}</Text>
+          <Dropdown
+            data={languages.map((item) => ({
+              value: item.value,
+              label: t(item.label),
+            }))}
+            setValue={toggleLanguage}
+            value={language}
+            isOpen={openDropdown === "lang"}
+            setIsOpen={(val) => setOpenDropdown(val ? "lang" : null)}
+            wrapperStyle={styles.wrapperStyle}
+            dropdownStyle={styles.dropdownStyle}
+            arrowIconComponent={<ArrowBottomIcon stroke={2} height={9} />}
+          />
+        </View>
         <Button
           style={[styles.btn, { marginTop: 22, marginBottom: 16 }]}
           color="blue"
@@ -186,7 +189,7 @@ const Settings = () => {
             <Text style={styles.btnText}>{t("deleteAccount")}</Text>
           </Button>
         )}
-        <Text style={styles.version}>QWality Release v1.1.0</Text>
+        <Text style={styles.version}>QWality Release v1.2.0</Text>
       </View>
       <Modal isVisible={isExitModalOpen} setIsVisible={setIsExitModalOpen}>
         <View style={styles.modal}>

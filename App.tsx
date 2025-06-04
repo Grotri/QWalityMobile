@@ -86,9 +86,11 @@ const App = () => {
   useEffect(() => {
     if (user.id) {
       fetchCameras();
-      fetchAccounts();
+      if (user.role === "owner" || user.role === "admin") {
+        fetchAccounts();
+      }
     }
-  }, [fetchAccounts, fetchCameras, user.id]);
+  }, [fetchAccounts, fetchCameras, user.id, user.role]);
 
   useEffect(() => {
     const checkTokenAndFetchUser = async () => {
