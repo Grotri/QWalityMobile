@@ -15,6 +15,7 @@ import {
   sendUpdateClientCode,
 } from "../api/client";
 import { forceLogout, initForceLogout } from "../api/forceLogout";
+import { buyLicense, getCurrentLicense } from "../api/license";
 import { setRefresh, setToken } from "../api/token";
 import { getUserInfo } from "../api/user";
 import { EErrors } from "../constants/errors";
@@ -35,7 +36,7 @@ interface IUseAuthStore extends IStoreStatus {
   user: IUser;
   errors: IErrors;
   language: TLanguage;
-  fetchUserInfo: (isWithTestSubs?: boolean) => Promise<void>;
+  fetchUserInfo: (isWithSubs?: boolean) => Promise<void>;
   setLanguage: (lang: TLanguage) => void;
   setUserField: (field: keyof IUser, value: string) => void;
   setUser: (newUser: IUser) => void;
@@ -58,6 +59,8 @@ interface IUseAuthStore extends IStoreStatus {
   deleteAccount: (code: string, onClose: () => void) => void;
   sendEditCode: () => void;
   changeClient: (newAccount: IUser, code: string, onClose: () => void) => void;
+  handleLicense: (id: string, success?: () => void) => void;
+  handleDemoLicense: (success?: () => void) => void;
 }
 
 const useAuthStore = create<IUseAuthStore>((set, get) => {
@@ -71,15 +74,28 @@ const useAuthStore = create<IUseAuthStore>((set, get) => {
     user: { ...initialUser },
     language: "ru",
 
-    fetchUserInfo: async (isWithTestSubs) => {
+    fetchUserInfo: async (isWithSubs) => {
       try {
         set({ loading: true, error: null });
         const res = await getUserInfo();
-        set({
-          user: convertUserInfo(res.data, isWithTestSubs),
-          loading: false,
-          error: false,
-        });
+
+        if (isWithSubs) {
+          const resLisence = await getCurrentLicense();
+          set({
+            user: convertUserInfo(
+              res.data,
+              (Number(resLisence.data.tariff_id) - 1).toString()
+            ),
+            loading: false,
+            error: false,
+          });
+        } else {
+          set({
+            user: convertUserInfo(res.data, ""),
+            loading: false,
+            error: false,
+          });
+        }
       } catch (error) {
         console.log(error);
         forceLogout();
@@ -92,6 +108,34 @@ const useAuthStore = create<IUseAuthStore>((set, get) => {
         const updatedUser = { ...state.user, [field]: value };
         return { user: updatedUser };
       }),
+
+    handleLicense: async (id, success) => {
+      const { setUserField } = get();
+      try {
+        await buyLicense(Number(id) + 1);
+        setUserField("subscription", id);
+        if (success) {
+          success();
+        }
+      } catch (error) {
+        console.log(error);
+        showErrorToast(i18n.t("subscriptionPaidError"));
+      }
+    },
+
+    handleDemoLicense: async (success) => {
+      const { setUserField } = get();
+      try {
+        await buyLicense(1);
+        setUserField("subscription", "0");
+        if (success) {
+          success();
+        }
+      } catch (error) {
+        console.log(error);
+        showErrorToast(i18n.t("unknownError"));
+      }
+    },
 
     setUser: (newUser) => {
       set({ user: { ...newUser } });

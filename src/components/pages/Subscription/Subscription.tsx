@@ -13,7 +13,7 @@ import { styles } from "./styles";
 const Subscription = () => {
   const { navigate } = useSubscriptionNavigation();
   const { t } = useTranslation();
-  const { setUserField } = useAuthStore();
+  const { handleDemoLicense } = useAuthStore();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -51,7 +51,7 @@ const Subscription = () => {
                   if (item.id !== 0) {
                     navigate("Payment", { sliderId: item.id.toString() });
                   } else {
-                    setUserField("subscription", "0");
+                    handleDemoLicense();
                   }
                 }}
               />
