@@ -7,6 +7,11 @@ interface IExportDataParams {
   format: string;
 }
 
+interface IDeleteExportLogsParams {
+  start_date: string;
+  end_date: string;
+}
+
 export const getExportReport = async (params: IExportDataParams) => {
   const response = await api.post("/export/report", params, {
     responseType: "arraybuffer",
@@ -21,4 +26,8 @@ export const getExportLog = async (params: IExportDataParams) => {
   });
 
   return Buffer.from(response.data);
+};
+
+export const deleteExportLogs = async (params: IDeleteExportLogsParams) => {
+  return await api.delete("/export/logs", { data: params });
 };

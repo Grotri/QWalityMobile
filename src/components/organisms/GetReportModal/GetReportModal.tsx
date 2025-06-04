@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
 import { ArrowBottomIcon, CrossIcon } from "../../../../assets/icons";
 import { formats } from "../../../constants/formats";
-import { showErrorToast, showSuccessToast } from "../../../helpers/toast";
+import { showErrorToast } from "../../../helpers/toast";
 import { usePalette } from "../../../hooks/usePalette";
 import Button from "../../atoms/Button";
 import DatePicker from "../../atoms/DatePicker";
@@ -19,7 +19,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
   const styles = getStyles();
   const palette = usePalette();
   const { t } = useTranslation();
-  const { getReport, getLog } = useReportsAndLogsStore();
+  const { getReport, getLog, deleteLog } = useReportsAndLogsStore();
   const [isSubModalOpened, setIsSubModalOpened] = useState<boolean>(false);
   const [isFormatDdOpen, setIsFormatDdOpen] = useState<boolean>(false);
   const [type, setType] = useState<"report" | "log">("report");
@@ -61,8 +61,9 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
   const handleDelete = () => {
     if (!validateDates()) return;
 
-    showSuccessToast(type === "log" ? t("logDeleted") : t("reportDeleted"));
-    closeModals();
+    if (startDate && endDate) {
+      deleteLog(startDate, endDate, closeModals);
+    }
   };
 
   const closeModals = () => {
@@ -158,9 +159,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                   style={styles.btnModal}
                   onPress={() => setIsSubModalOpened(true)}
                 >
-                  <Text style={styles.btnModalText}>
-                    {type === "log" ? t("deleteLog") : t("deleteReport")}
-                  </Text>
+                  <Text style={styles.btnModalText}>{t("deleteLog")}</Text>
                 </Button>
                 <View style={styles.empty} />
                 <Button
@@ -175,11 +174,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
           </View>
           {isSubModalOpened && (
             <View style={styles.modal}>
-              <Text style={styles.subModalTitle}>
-                {type === "log"
-                  ? t("confirmDeleteLog")
-                  : t("confirmDeleteReport")}
-              </Text>
+              <Text style={styles.subModalTitle}>{t("confirmDeleteLog")}</Text>
               <View style={styles.modalContent}>
                 <View style={styles.row}>
                   <Button
