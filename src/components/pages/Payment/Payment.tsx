@@ -14,7 +14,7 @@ const Payment = () => {
   const route = useRoute();
   const { t } = useTranslation();
   const { navigate } = useSubscriptionNavigation();
-  const { setUserField } = useAuthStore();
+  const { handleLicense } = useAuthStore();
   const { sliderId } = route.params as { sliderId: string };
   const subscriptionCost = useCost(sliderId || "0");
 
@@ -31,8 +31,9 @@ const Payment = () => {
         {sliderId && (
           <Button
             onPress={() => {
-              setUserField("subscription", sliderId);
-              showSuccessToast(t("subscriptionPaid"));
+              handleLicense(sliderId, () => {
+                showSuccessToast(t("subscriptionPaid"));
+              });
             }}
             style={styles.btn}
             color="blue"

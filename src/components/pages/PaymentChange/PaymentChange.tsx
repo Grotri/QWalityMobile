@@ -13,7 +13,7 @@ import { getStyles } from "./styles";
 const PaymentChange = () => {
   const route = useRoute();
   const { t } = useTranslation();
-  const { setUserField } = useAuthStore();
+  const { handleLicense } = useAuthStore();
   const styles = getStyles();
   const { navigate } = useMainNavigation();
   const { sliderId } = route.params as { sliderId: string };
@@ -34,12 +34,13 @@ const PaymentChange = () => {
         {sliderId && (
           <Button
             onPress={() => {
-              setUserField("subscription", sliderId);
-              navigate("Profile", { direction: "backward" });
-              showSuccessToast(t("subscriptionPaid"));
-              setTimeout(() => {
-                showSuccessToast(t("subscriptionLevelChanged"));
-              }, 2000);
+              handleLicense(sliderId, () => {
+                navigate("Profile", { direction: "backward" });
+                showSuccessToast(t("subscriptionPaid"));
+                setTimeout(() => {
+                  showSuccessToast(t("subscriptionLevelChanged"));
+                }, 2000);
+              });
             }}
             style={styles.btn}
             color="blue"

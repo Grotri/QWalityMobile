@@ -22,7 +22,7 @@ import { getStyles } from "./styles";
 const SubscriptionChange = () => {
   const { navigate } = useMainNavigation();
   const { t } = useTranslation();
-  const { user, setUserField, logout } = useAuthStore();
+  const { user, handleDemoLicense, logout } = useAuthStore();
   const styles = getStyles();
   const { cameras } = useCamerasStore();
   const { accounts, clearAccounts } = useAccountStore();
@@ -66,9 +66,10 @@ const SubscriptionChange = () => {
       );
     } else {
       if (sliderId === "0") {
-        setUserField("subscription", sliderId);
-        navigate("Profile", { direction: "backward" });
-        showSuccessToast(t("subscriptionLevelChanged"));
+        handleDemoLicense(() => {
+          navigate("Profile", { direction: "backward" });
+          showSuccessToast(t("subscriptionLevelChanged"));
+        });
       } else {
         navigate("PaymentChange", { sliderId });
       }
