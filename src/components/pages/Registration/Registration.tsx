@@ -1,6 +1,7 @@
+import { userAgreement } from "@/src/constants/agreement";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Keyboard, Pressable, Text, View } from "react-native";
+import { Keyboard, Linking, Pressable, Text, View } from "react-native";
 import { CheckIcon } from "../../../../assets/icons";
 import useAuthStore from "../../../hooks/useAuthStore";
 import { useAuthNavigation } from "../../../hooks/useTypedNavigation";
@@ -131,7 +132,10 @@ const Registration = () => {
               ]}
             >
               {t("iAccept")}{" "}
-              <Text style={styles.checkboxTextUnderlined}>
+              <Text
+                style={styles.checkboxTextUnderlined}
+                onPress={() => Linking.openURL(userAgreement)}
+              >
                 {t("termsOfUse")}
               </Text>
             </Text>
