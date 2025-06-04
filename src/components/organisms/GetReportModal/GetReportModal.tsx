@@ -1,4 +1,5 @@
 import { EErrors } from "@/src/constants/errors";
+import useReportsAndLogsStore from "@/src/hooks/useReportsAndLogsStore";
 import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
@@ -18,12 +19,13 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
   const styles = getStyles();
   const palette = usePalette();
   const { t } = useTranslation();
+  const { getReport, getLog } = useReportsAndLogsStore();
   const [isSubModalOpened, setIsSubModalOpened] = useState<boolean>(false);
   const [isFormatDdOpen, setIsFormatDdOpen] = useState<boolean>(false);
   const [type, setType] = useState<"report" | "log">("report");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [format, setFormat] = useState<string>("0");
+  const [format, setFormat] = useState<string>("pdf");
 
   const validateDates = (): boolean => {
     if (!startDate || !endDate) {
@@ -47,10 +49,13 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
   const handleSave = () => {
     if (!validateDates()) return;
 
-    showSuccessToast(
-      type === "log" ? t("logDownloaded") : t("reportDownloaded")
-    );
-    closeModals();
+    if (startDate && endDate) {
+      if (type === "report") {
+        getReport(startDate, endDate, format, closeModals);
+      } else if (type === "log") {
+        getLog(startDate, endDate, format, closeModals);
+      }
+    }
   };
 
   const handleDelete = () => {
@@ -75,7 +80,7 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
       setType("report");
       setStartDate(null);
       setEndDate(null);
-      setFormat("0");
+      setFormat("pdf");
     }
   }, [isOpen]);
 
@@ -95,7 +100,9 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
           <View style={styles.modal}>
             <View style={styles.crossIconWrapper}>
               <CrossIcon style={styles.crossIcon} onClick={closeModals} />
-              <Text style={styles.modalTitle}>{t("getReport")}</Text>
+              <Text style={styles.modalTitle}>
+                {type === "log" ? t("getLog") : t("getReport")}
+              </Text>
             </View>
             <View style={styles.modalContent}>
               <View style={styles.row}>
@@ -151,7 +158,9 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
                   style={styles.btnModal}
                   onPress={() => setIsSubModalOpened(true)}
                 >
-                  <Text style={styles.btnModalText}>{t("deleteLog")}</Text>
+                  <Text style={styles.btnModalText}>
+                    {type === "log" ? t("deleteLog") : t("deleteReport")}
+                  </Text>
                 </Button>
                 <View style={styles.empty} />
                 <Button
@@ -166,7 +175,11 @@ const GetReportModal: FC<IGetReportModal> = ({ isOpen, setIsOpen }) => {
           </View>
           {isSubModalOpened && (
             <View style={styles.modal}>
-              <Text style={styles.subModalTitle}>{t("confirmDeleteLog")}</Text>
+              <Text style={styles.subModalTitle}>
+                {type === "log"
+                  ? t("confirmDeleteLog")
+                  : t("confirmDeleteReport")}
+              </Text>
               <View style={styles.modalContent}>
                 <View style={styles.row}>
                   <Button

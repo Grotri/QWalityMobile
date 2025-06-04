@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Buffer } from "buffer";
 import * as Font from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import React, { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ import useCamerasStore from "./src/hooks/useCamerasStore";
 import i18n from "./src/i18n";
 import { TLanguage } from "./src/model/user";
 import { Navigation } from "./src/navigation";
+global.Buffer = Buffer;
 
 const App = () => {
   const { user, language, setLanguage, fetchUserInfo } = useAuthStore();

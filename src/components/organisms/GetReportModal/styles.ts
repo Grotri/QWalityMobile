@@ -36,7 +36,7 @@ export const getStyles = () => {
       color: palette.mainText,
     },
     modalContent: {
-      paddingHorizontal: "6%",
+      paddingHorizontal: "4%",
       marginTop: 16,
       gap: 20,
     },
@@ -44,7 +44,7 @@ export const getStyles = () => {
       width: "100%",
       flexDirection: "row",
       alignItems: "center",
-      gap: 13,
+      gap: 10,
     },
     empty: {
       width: 16,
@@ -70,13 +70,14 @@ export const getStyles = () => {
     btnModal: {
       flex: 1,
       borderRadius: 8,
-      height: 27,
+      minHeight: 27,
     },
     btnModalText: {
       color: palette.mainText,
       fontSize: getFontSize(16),
       lineHeight: getLineHeight(21),
       fontFamily: fonts.semibold,
+      textAlign: "center",
     },
     subModalTitle: {
       color: palette.mainText,
