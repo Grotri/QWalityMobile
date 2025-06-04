@@ -7,11 +7,7 @@ import { EErrors } from "../../../constants/errors";
 import { emailPattern, innPattern } from "../../../constants/patterns";
 import { ERoles } from "../../../constants/roles";
 import { screenHeight } from "../../../constants/screenSize";
-import {
-  showErrorToast,
-  showInfoToast,
-  showSuccessToast,
-} from "../../../helpers/toast";
+import { showErrorToast, showInfoToast } from "../../../helpers/toast";
 import useAuthStore from "../../../hooks/useAuthStore";
 import { usePalette } from "../../../hooks/usePalette";
 import { useMainNavigation } from "../../../hooks/useTypedNavigation";
@@ -26,7 +22,7 @@ import { IErrors, initialErrors } from "./types";
 const Profile = () => {
   const { navigate } = useMainNavigation();
   const { t } = useTranslation();
-  const { user, setUser, loading, error } = useAuthStore();
+  const { user, loading, error, sendEditCode, changeClient } = useAuthStore();
   const styles = getStyles();
   const palette = usePalette();
   const [userInfo, setUserInfo] = useState<IUser>({ ...initialUser });
@@ -68,10 +64,10 @@ const Profile = () => {
     };
     if (JSON.stringify(user) !== JSON.stringify(newProfile)) {
       if (validate()) {
-        setIsEditMode(false);
-        setCode("");
-        setUser(newProfile);
-        showSuccessToast(t("profileDataChanged"));
+        changeClient(newProfile, code, () => {
+          setIsEditMode(false);
+          setCode("");
+        });
       } else {
         showErrorToast(t(EErrors.fields));
       }
@@ -200,7 +196,7 @@ const Profile = () => {
                 <Button
                   style={styles.codeBtn}
                   color="darkBlue"
-                  onPress={() => showInfoToast(t("unavailableCode"))}
+                  onPress={sendEditCode}
                 >
                   <Text style={styles.codeBtnText}>{t("sendCode")}</Text>
                 </Button>
